@@ -17,53 +17,68 @@ DataInputStream::DataInputStream(InputStream* is)
 
 void DataInputStream::seekStart(bool& success)
 {
-	if(_is)
-		return _is->seekStart(success);
-	success=false;
+	if(!_is)
+	{
+		success=false;
+		return;
+	}
+
+	_is->seekStart(success);
 }
 
 void DataInputStream::seekRelative(int count,bool& success)
 {
-	if(_is)
-		return _is->seekRelative(count,success);
-	success=false;
+	if(!_is)
+	{
+		success=false;
+		return;
+	}
+
+	_is->seekRelative(count,success);
 }
 
 void DataInputStream::seekEnd(bool& success)
 {
-	if(_is)
-		return _is->seekEnd(success);
-	success=false;
+	if(!_is)
+	{
+		success=false;
+		return;
+	}
+
+	return _is->seekEnd(success);
 }
 
 int DataInputStream::getAvailable(bool& success)
 {
-	if(_is)
-		return _is->getAvailable(success);
-	success=false;
-	return 0;
-}
+	if(!_is)
+	{
+		success=false;
+		return 0;
+	}
 
-/*uchar DataInputStream::readUChar(bool& success)
-{
-	if(_is)
-		return _is->readUChar(success);
-	success=false;
-	return 0;
-}*/
+	return _is->getAvailable(success);
+}
 
 void DataInputStream::readUChar(uchar* buf,int count,bool& success)
 {
-	if(_is)
-		return _is->readUChar(buf,count,success);
-	success=false;
+	if(!_is)
+	{
+		success=false;
+		return;
+	}
+
+	_is->readUChar(buf,count,success);
 }
 
 void DataInputStream::close(bool& success)
 {
-	if(_is)
-		return _is->close(success);
-	success=false;
+	if(!_is)
+	{
+		success=false;
+		return;
+	}
+
+	_is->close(success);
 }
 
 void DataInputStream::close()
@@ -74,127 +89,148 @@ void DataInputStream::close()
 
 bool DataInputStream::readBool(bool& success)
 {
-	if(_is)
-		return _is->readUChar(success)!=0;
-	success=false;
-	return false;
+	if(!_is)
+	{
+		success=false;
+		return false;
+	}
+
+	return _is->readUChar(success)!=0;
 }
 
 char DataInputStream::readChar(bool& success)
 {
-	if(_is)
-		return _is->readUChar(success);
-	success=false;
-	return 0;
+	if(!_is)
+	{
+		success=false;
+		return 0;
+	}
+
+	return _is->readUChar(success);
 }
 
 uchar DataInputStream::readUChar(bool& success)
 {
-	if(_is)
-		return _is->readUChar(success);
-	success=false;
-	return 0;
+	if(!_is)
+	{
+		success=false;
+		return 0;
+	}
+
+	return _is->readUChar(success);
 }
 
 short DataInputStream::readShort(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		short ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	short ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 ushort DataInputStream::readUShort(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		ushort ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	ushort ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 int DataInputStream::readInt(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		int ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	int ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 uint DataInputStream::readUInt(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		uint ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	uint ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 long DataInputStream::readLong(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		long ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	long ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 ulong DataInputStream::readULong(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		ulong ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	ulong ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 float DataInputStream::readFloat(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		float ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	float ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 double DataInputStream::readDouble(bool& success)
 {
-	if(_is)
+	if(!_is)
 	{
-		double ret;
-		_is->readUChar((uchar*)&ret,sizeof(ret),success);
-		return ret;
+		success=false;
+		return 0;
 	}
-	success=false;
-	return 0;
+
+	double ret;
+	_is->readUChar((uchar*)&ret,sizeof(ret),success);
+	return ret;
 }
 
 void DataInputStream::readLine(char* buf,int bufLen,bool& success)
 {
-	if(_is)
-		return _is->readUChar((uchar*)buf,bufLen,success);
-	success=false;
+	if(!_is)
+	{
+		success=false;
+		return;
+	}
+
+	_is->readUChar((uchar*)buf,bufLen,success);
 }

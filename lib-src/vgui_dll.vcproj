@@ -25,11 +25,12 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine=""
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="if exist ..\..\..\vgui2.dll attrib -r ..\..\..\vgui2.dll&#x0D;&#x0A;copy $(TargetPath) ..\..\..\vgui2.dll&#x0D;&#x0A;if exist $(TargetDir)vgui2.map copy $(TargetDir)vgui2.map ..\..\..\vgui2.map&#x0D;&#x0A;"
-				Outputs="..\..\..\vgui2.dll"
+				CommandLine=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -50,7 +51,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalOptions="/MP"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\include"
+				AdditionalIncludeDirectories="..\include;..\..\..\public;.\win32"
 				PreprocessorDefinitions="_DEBUG;WIN32;_WINDOWS;_USRDLL;DONT_PROTECT_FILEIO_FUNCTIONS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -113,7 +114,7 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine=""
+				CommandLine="copy &quot;Debug\vgui.dll&quot; &quot;F:\Half-Life\vgui.dll&quot;"
 			/>
 		</Configuration>
 		<Configuration
@@ -131,8 +132,8 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine="if exist ..\..\..\vgui2.dll attrib -r ..\..\..\vgui2.dll&#x0D;&#x0A;copy $(TargetPath) ..\..\..\vgui2.dll&#x0D;&#x0A;if exist $(TargetDir)vgui2.map copy $(TargetDir)vgui2.map ..\..\..\vgui2.map&#x0D;&#x0A;"
-				Outputs="..\..\..\vgui2.dll"
+				CommandLine=""
+				Outputs=""
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -153,7 +154,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\include"
+				AdditionalIncludeDirectories="..\include;..\..\..\public;.\win32"
 				PreprocessorDefinitions="NDEBUG;WIN32;_WINDOWS;_USRDLL;DONT_PROTECT_FILEIO_FUNCTIONS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -477,6 +478,140 @@
 				RelativePath=".\vgui\WizardPanel.cpp"
 				>
 			</File>
+			<Filter
+				Name="win32"
+				>
+				<File
+					RelativePath=".\win32\App.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\win32\Cursor.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\win32\fileimage.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\win32\fileimage.h"
+					>
+				</File>
+				<File
+					RelativePath=".\win32\Font.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\win32\Surface.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\win32\vfontdata.cpp"
+					>
+				</File>
+				<File
+					RelativePath=".\win32\vfontdata.h"
+					>
+				</File>
+				<File
+					RelativePath=".\win32\vgui.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							ObjectFile="$(IntDir)\$(InputName)1.obj"
+							XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath=".\win32\vgui_win32.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"

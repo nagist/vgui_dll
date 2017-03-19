@@ -113,7 +113,7 @@ void DesktopIcon::setImage(Image* image)
 	{
 		int wide,tall;
 		_image->getSize(wide,tall);
-		//_image->setSize(wide,tall);
+		setSize(wide,tall);
 	}
 }
 

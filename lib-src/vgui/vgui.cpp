@@ -5,19 +5,58 @@
 // $NoKeywords: $
 //=============================================================================
 
+#include <malloc.h>
 #include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
 #include "VGUI.h"
+
+static void*(*staticMalloc)(size_t size)=malloc;
+static void(*staticFree)(void* memblock)=free;
+
+void *operator new(size_t size)
+{
+	return staticMalloc(size);
+}
+
+void operator delete(void* memblock)
+{
+	if (!memblock)
+		return;
+
+	staticFree(memblock);
+}
+
+void *operator new [] (size_t size)
+{
+	return staticMalloc(size);
+}
+
+void operator delete [] (void *pMem)
+{
+	staticFree(pMem);
+}
+
+void vgui_setMalloc(void *(*theMalloc)(size_t size) )
+{
+	if(!theMalloc)
+	{
+		theMalloc=malloc;
+	}
+	staticMalloc=theMalloc;
+}
+
+void vgui_setFree(void (*theFree)(void* memblock))
+{
+	if(!theFree)
+	{
+		theFree=free;
+	}
+	staticFree=theFree;
+}
 
 namespace vgui
 {
-void vgui_setMalloc(void *(*malloc)(size_t size) )
-{
-}
-
-void vgui_setFree(void (*free)(void* memblock))
-{
-}
-
 void vgui_strcpy(char* dst,int dstLen,const char* src)
 {
 	int srcLen=strlen(src)+1;
@@ -37,16 +76,14 @@ char* vgui_strdup(const char* src)
 
 int vgui_printf(const char* format,...)
 {
-	return 0;
-}
+	char    buf[2048];
+	va_list argList;
 
-int vgui_dprintf(const char* format,...)
-{
-	return 0;
-}
+	va_start(argList,format);
+	int ret=vsprintf(buf,format,argList);
+	va_end(argList);
 
-int vgui_dprintf2(const char* format,...)
-{
-	return 0;
+	printf("%s",buf);
+	return ret;
 }
 }

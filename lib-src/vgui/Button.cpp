@@ -136,7 +136,7 @@ void Button::doClick()
 
 void Button::addActionSignal(ActionSignal* s)
 {
-	// dummy
+	_actionSignalDar.putElement(s);
 }
 
 void Button::setButtonGroup(ButtonGroup* buttonGroup)
@@ -200,7 +200,7 @@ void Button::setButtonController(ButtonController* buttonController)
 {
 	if(_buttonController)
 		_buttonController->removeSignals(this);
-	_buttonController = buttonController;
+	_buttonController=buttonController;
 	_buttonController->addSignals(this);
 }
 

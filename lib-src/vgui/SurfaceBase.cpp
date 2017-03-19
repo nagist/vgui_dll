@@ -5,163 +5,93 @@
 // $NoKeywords: $
 //=============================================================================
 
+#include <stdio.h>
 #include "VGUI.h"
 #include "VGUI_SurfaceBase.h"
+#include "VGUI_ImagePanel.h"
+#include "VGUI_App.h"
+#include "VGUI_Cursor.h"
 
 using namespace vgui;
 
 SurfaceBase::SurfaceBase(Panel* embeddedPanel)
 {
+	_embeddedPanel=embeddedPanel;
+	_needsSwap=true;
+	_emulatedCursor=new ImagePanel(null);
+	_emulatedCursor->setVisible(false);
+	_currentCursor=null;
+	_embeddedPanel->setSurfaceBaseTraverse(this);
+	getApp()->surfaceBaseCreated(this);
+	_emulatedCursor->setParent(getPanel());
 }
 
 SurfaceBase::~SurfaceBase()
 {
+	getApp()->surfaceBaseDeleted(this);
 }
 
 Panel* SurfaceBase::getPanel()
 {
-	return null;
+	return _embeddedPanel;
 }
 
 void SurfaceBase::requestSwap()
 {
+	_needsSwap=true;
 }
 
 void SurfaceBase::resetModeInfo()
 {
+	_modeInfoDar.removeAll();
 }
 
 int SurfaceBase::getModeInfoCount()
 {
-	return 0;
+	return _modeInfoDar.getCount();
 }
 
 bool SurfaceBase::getModeInfo(int mode,int& wide,int& tall,int& bpp)
 {
-	return false;
+	if((mode<0)||(mode>=_modeInfoDar.getCount()))
+	{
+		return false;
+	}
+
+	sscanf(_modeInfoDar[mode],"%dx%dx%d",&wide,&tall,&bpp);
+	return true;
 }
 
 App* SurfaceBase::getApp()
 {
-	return null;
+	return App::getInstance();
 }
 
 void SurfaceBase::setEmulatedCursorVisible(bool state)
 {
+	_emulatedCursor->setVisible(state);
 }
 
 void SurfaceBase::setEmulatedCursorPos(int x,int y)
 {
-}
+	getPanel()->removeChild(_emulatedCursor);
+	getPanel()->addChild(_emulatedCursor);
+	getPanel()->screenToLocal(x,y);
 
-void SurfaceBase::setTitle(const char* title)
-{
-}
+	if(_currentCursor&&_emulatedCursor->isVisible())
+	{
+		int cx,cy;
+		_currentCursor->getHotspot(cx,cy);
+		x-=cx;
+		y-=cy;
+	}
 
-bool SurfaceBase::setFullscreenMode(int wide,int tall,int bpp)
-{
-	return false;
-}
-
-void SurfaceBase::setWindowedMode()
-{
-}
-
-void SurfaceBase::setAsTopMost(bool state)
-{
-}
-
-void SurfaceBase::createPopup(Panel* embeddedPanel)
-{
-}
-
-bool SurfaceBase::hasFocus()
-{
-	return false;
-}
-
-bool SurfaceBase::isWithin(int x,int y)
-{
-	return false;
-}
-
-int SurfaceBase::createNewTextureID(void)
-{
-	return 0;
-}
-
-void SurfaceBase::GetMousePos( int &x, int &y )
-{
+	_emulatedCursor->setPos(x,y);
 }
 
 void SurfaceBase::addModeInfo(int wide,int tall,int bpp)
 {
-}
-
-void SurfaceBase::drawSetColor(int r,int g,int b,int a)
-{
-}
-
-void SurfaceBase::drawFilledRect(int x0,int y0,int x1,int y1)
-{
-}
-
-void SurfaceBase::drawOutlinedRect(int x0,int y0,int x1,int y1)
-{
-}
-
-void SurfaceBase::drawSetTextFont(Font* font)
-{
-}
-
-void SurfaceBase::drawSetTextColor(int r,int g,int b,int a)
-{
-}
-
-void SurfaceBase::drawSetTextPos(int x,int y)
-{
-}
-
-void SurfaceBase::drawPrintText(const char* text,int textLen)
-{
-}
-
-void SurfaceBase::drawSetTextureRGBA(int id,const char* rgba,int wide,int tall)
-{
-}
-
-void SurfaceBase::drawSetTexture(int id)
-{
-}
-
-void SurfaceBase::drawTexturedRect(int x0,int y0,int x1,int y1)
-{
-}
-
-void SurfaceBase::invalidate(Panel *panel)
-{
-}
-
-void SurfaceBase::enableMouseCapture(bool state)
-{
-}
-
-void SurfaceBase::setCursor(Cursor* cursor)
-{
-}
-
-void SurfaceBase::swapBuffers()
-{
-}
-
-void SurfaceBase::pushMakeCurrent(Panel* panel,bool useInsets)
-{
-}
-
-void SurfaceBase::popMakeCurrent(Panel* panel)
-{
-}
-
-void SurfaceBase::applyChanges()
-{
+	char buf[256];
+	sprintf(buf,"%dx%dx%d",wide,tall,bpp);
+	_modeInfoDar.putElement(vgui_strdup(buf));
 }

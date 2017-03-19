@@ -10,12 +10,42 @@
 
 using namespace vgui;
 
+class FooCheckImage : public Image
+{
+public:
+	FooCheckImage(CheckButton* checkButton) : Image()
+	{
+		_checkButton=checkButton;
+		setSize(20,20);
+	}
+	void paint()
+	{
+		drawSetTextFont(Scheme::sf_secondary1);
+		drawSetTextColor(Scheme::sc_white);
+		drawPrintChar(0,0,'g');
+		drawSetTextColor(Scheme::sc_secondary2);
+		drawPrintChar(0,0,'c');
+		drawSetTextColor(Scheme::sc_white);
+		drawPrintChar(0,0,'d');
+		drawSetTextColor(Scheme::sc_black);
+		drawPrintChar(0,0,'e');
+		drawSetTextColor(Scheme::sc_secondary3);
+		drawPrintChar(0,0,'f');
+		drawSetTextColor(Scheme::sc_black);
+		if(_checkButton->isSelected())
+		{
+			drawSetTextColor(Scheme::sc_black);
+			drawPrintChar(0,0,'a');
+		}
+	}
+private:
+	CheckButton* _checkButton;
+};
+
 CheckButton::CheckButton(const char* text,int x,int y,int wide,int tall) : ToggleButton(text,x,y,wide,tall)
 {
 	setTextAlignment(Label::a_east);
-	Image* image = new Image();
-	//image->setSize(20,20);
-	setImage(image);
+	setImage(new FooCheckImage(this));
 	getContentSize(wide,tall);
 	setSize(wide,tall);
 }
@@ -23,9 +53,7 @@ CheckButton::CheckButton(const char* text,int x,int y,int wide,int tall) : Toggl
 CheckButton::CheckButton(const char* text,int x,int y) : ToggleButton(text,x,y)
 {
 	setTextAlignment(Label::a_east);
-	Image* image = new Image();
-	//image->setSize(20,20);
-	setImage(image);
+	setImage(new FooCheckImage(this));
 }
 
 void CheckButton::paintBackground()

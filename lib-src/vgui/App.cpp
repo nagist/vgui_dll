@@ -9,14 +9,13 @@
 #include "VGUI_App.h"
 #include "VGUI_SurfaceBase.h"
 #include "VGUI_Panel.h"
-
-#if defined ( WIN32 )
-#include <windows.h>
-#endif
+#include "VGUI_TickSignal.h"
+#include "VGUI_Font.h"
 
 using namespace vgui;
 
 App *App::_instance=null;
+char *_keyTrans[KEY_LAST];
 
 App::App()
 {
@@ -29,21 +28,16 @@ App::App(bool externalMain)
 	_externalMain=externalMain;
 }
 
-App* App::getInstance()
-{
-	return _instance;
-}
-
 void App::start()
 {
 #if defined ( WIN32 )
-	main(null,null);
+	main(__argc,__argv);
 #endif
 	if(!_externalMain)
 	{
 		run();
 		for(int i=0; i<_surfaceBaseDar.getCount();i++)
-			_surfaceBaseDar[i]->setWindowedMode(); // ?
+			_surfaceBaseDar[i]->setWindowedMode();
 	}
 }
 
@@ -107,16 +101,7 @@ bool App::wasKeyReleased(KeyCode code,Panel* panel)
 
 void App::addTickSignal(TickSignal* s)
 {
-}
-
-void App::setCursorPos(int x,int y)
-{
-	// dummy
-}
-
-void App::getCursorPos(int& x,int& y)
-{
-	_surfaceBaseDar[0]->GetMousePos(x,y);
+	_tickSignalDar.putElement(s);
 }
 
 void App::setMouseCapture(Panel* panel)
@@ -182,133 +167,25 @@ void App::enableBuildMode()
 	_wantedBuildMode=true;
 }
 
-long App::getTimeMillis()
-{
-#if defined ( WIN32 )
-	return GetTickCount();
-#else
-	struct timeval tp;
-	static int secbase = 0;
-
-	gettimeofday(&tp, NULL);
-
-	if (!secbase)
-	{
-		secbase = tp.tv_usec;
-		return tp.tv_usec / 1000000.0;
-	}
-
-	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
-#endif
-}
-
 char App::getKeyCodeChar(KeyCode code,bool shifted)
 {
-	// if(shifted)
-	// dummy
-	return 0;
+	return _keyTrans[code][shifted?1:0];
 }
 
 void App::getKeyCodeText(KeyCode code,char* buf,int buflen)
 {
-	// dummy
-}
-
-int App::getClipboardTextCount()
-{
-#if defined ( WIN32 )
-	int count = 0;
-	if (!OpenClipboard(NULL))
-		return 0;
-	
-	HANDLE hmem = GetClipboardData(CF_TEXT);
-	if (hmem)
-	{
-		count = GlobalSize(hmem);
-	}
-
-	CloseClipboard();
-	return count;
-#else
-	return 0;
-#endif
-}
-
-void App::setClipboardText(const char* text,int textLen)
-{
-#if defined ( WIN32 )
-	if (!text)
-		return;
-
-	if (textLen <= 0)
-		return;
-
-	if (!OpenClipboard(NULL))
-		return;
-
-	EmptyClipboard();
-
-	HANDLE hmem = GlobalAlloc(GMEM_MOVEABLE | GMEM_DDESHARE, textLen + 1);
-	if (hmem)
-	{
-		void *ptr = GlobalLock(hmem);
-		if (ptr != null)
-		{
-			memset(ptr, 0, textLen + 1);
-			memcpy(ptr, text, textLen);
-			GlobalUnlock(hmem);
-
-			SetClipboardData(CF_TEXT, hmem);
-		}
-	}
-	
-	CloseClipboard();
-#else
-#endif
-}
-
-int App::getClipboardText(int offset,char* buf,int bufLen)
-{
-#if defined ( WIN32 )
 	if (!buf)
-		return 0;
+		return;
 
-	if (bufLen <= 0)
-		return 0;
-
-	int count = 0;
-	if (!OpenClipboard(NULL))
-		return 0;
-	
-	HANDLE hmem = GetClipboardData(CF_UNICODETEXT);
-	if (hmem)
+	// copy text into buf up to buflen in length
+	// skip 2 in _keyTrans because the first two are for GetKeyCodeChar
+	for (int i = 0; i < buflen; i++)
 	{
-		int len = GlobalSize(hmem);
-		count = len - offset;
-		if (count <= 0)
-		{
-			count = 0;
-		}
-		else
-		{
-			if (bufLen < count)
-			{
-				count = bufLen;
-			}
-			void *ptr = GlobalLock(hmem);
-			if (ptr)
-			{
-				memcpy(buf, ((char *)ptr) + offset, count);
-				GlobalUnlock(hmem);
-			}
-		}
+		char ch = _keyTrans[code][i+2];
+		buf[i] = ch;
+		if (ch == 0)
+			break;
 	}
-
-	CloseClipboard();
-	return count;
-#else
-	return 0;
-#endif
 }
 
 void App::reset()
@@ -320,223 +197,8 @@ void App::reset()
 	_buildMode=false;
 	_wantedBuildMode=false;
 	_mouseArenaPanel=null;
-	//Font_Reset();
+	Font_Reset();
 	setScheme(new Scheme());
-}
-
-static bool staticSplitRegistryKey(const char *key, char *key0, int key0Len, char *key1, int key1Len)
-{
-	if(key==null)
-	{
-		return false;
-	}
-	
-	int len=strlen(key);
-	if(len<=0)
-	{
-		return false;
-	}
-
-	int state=0;
-	int Start=-1;
-	for(int i=len-1;i>=0;i--)
-	{
-		if(key[i]=='\\')
-		{
-			break;
-		}
-		else
-		{
-			Start=i;
-		}
-	}
-
-	if(Start==-1)
-	{
-		return false;
-	}
-	
-	vgui_strcpy(key0,Start+1,key);
-	vgui_strcpy(key1,(len-Start)+1,key+Start);
-
-	return true;
-}
-
-void App::internalSetMouseArena(int x0,int y0,int x1,int y1,bool enabled)
-{
-#if defined ( WIN32 )
-	RECT rc;
-	rc.left = x0;
-	rc.top = y0;
-	rc.bottom = y1;
-	rc.right = x1;
-	ClipCursor(enabled?&rc:NULL);
-#endif
-}
-
-bool App::setRegistryString(const char* key,const char* value)
-{
-#if defined ( _WIN32 )
-	HKEY hKey;
-
-	HKEY hSlot = HKEY_CURRENT_USER;
-	if (!strncmp(key, "HKEY_LOCAL_MACHINE", 18))
-	{
-		hSlot = HKEY_LOCAL_MACHINE;
-		key += 19;
-	}
-	else if (!strncmp(key, "HKEY_CURRENT_USER", 17))
-	{
-		hSlot = HKEY_CURRENT_USER;
-		key += 18;
-	}
-
-	char key0[256],key1[256];
-	if(!staticSplitRegistryKey(key,key0,256,key1,256))
-	{
-		return false;
-	}
-
-	if(RegCreateKeyEx(hSlot,key0,null,null,REG_OPTION_NON_VOLATILE,KEY_WRITE,null,&hKey,null)!=ERROR_SUCCESS)
-	{
-		return false;
-	}
-		
-	if(RegSetValueEx(hKey,key1,null,REG_SZ,(uchar*)value,strlen(value)+1)==ERROR_SUCCESS)
-	{
-		RegCloseKey(hKey);
-		return true;
-	}
-
-	RegCloseKey(hKey);
-
-	return false;
-#else
-	return false;
-#endif
-}
-
-bool App::getRegistryString(const char* key,char* value,int valueLen)
-{
-#if defined ( _WIN32 )
-	HKEY hKey;
-
-	HKEY hSlot = HKEY_CURRENT_USER;
-	if (!strncmp(key, "HKEY_LOCAL_MACHINE", 18))
-	{
-		hSlot = HKEY_LOCAL_MACHINE;
-		key += 19;
-	}
-	else if (!strncmp(key, "HKEY_CURRENT_USER", 17))
-	{
-		hSlot = HKEY_CURRENT_USER;
-		key += 18;
-	}
-
-	char key0[256],key1[256];
-	if(!staticSplitRegistryKey(key,key0,256,key1,256))
-	{
-		return false;
-	}
-
-	if(RegOpenKeyEx(hSlot,key0,null,KEY_READ,&hKey)!=ERROR_SUCCESS)
-	{
-		return false;
-	}
-
-	ulong len=valueLen;
-	if(RegQueryValueEx(hKey,key1,null,null,(uchar*)value,&len)==ERROR_SUCCESS)
-	{		
-		RegCloseKey(hKey);
-		return true;
-	}
-
-	RegCloseKey(hKey);
-	return false;
-#else
-	return false;
-#endif
-}
-
-bool App::setRegistryInteger(const char* key,int value)
-{
-#if defined ( _WIN32 )
-	HKEY hKey;
-	HKEY hSlot = HKEY_CURRENT_USER;
-	if (!strncmp(key, "HKEY_LOCAL_MACHINE", 18))
-	{
-		hSlot = HKEY_LOCAL_MACHINE;
-		key += 19;
-	}
-	else if (!strncmp(key, "HKEY_CURRENT_USER", 17))
-	{
-		hSlot = HKEY_CURRENT_USER;
-		key += 18;
-	}
-
-	char key0[256],key1[256];
-	if(!staticSplitRegistryKey(key,key0,256,key1,256))
-	{
-		return false;
-	}
-
-	if(RegCreateKeyEx(hSlot,key0,null,null,REG_OPTION_NON_VOLATILE,KEY_WRITE,null,&hKey,null)!=ERROR_SUCCESS)
-	{
-		return false;
-	}
-		
-	if(RegSetValueEx(hKey,key1,null,REG_DWORD,(uchar*)&value,4)==ERROR_SUCCESS)
-	{
-		RegCloseKey(hKey);
-		return true;
-	}
-
-	RegCloseKey(hKey);
-	return false;
-#else
-	return false;
-#endif
-}
-
-bool App::getRegistryInteger(const char* key,int& value)
-{
-#if defined ( _WIN32 )
-	HKEY hKey;
-	HKEY hSlot = HKEY_CURRENT_USER;
-	if (!strncmp(key, "HKEY_LOCAL_MACHINE", 18))
-	{
-		hSlot = HKEY_LOCAL_MACHINE;
-		key += 19;
-	}
-	else if (!strncmp(key, "HKEY_CURRENT_USER", 17))
-	{
-		hSlot = HKEY_CURRENT_USER;
-		key += 18;
-	}
-
-	char key0[256],key1[256];
-	if(!staticSplitRegistryKey(key,key0,256,key1,256))
-	{
-		return false;
-	}
-
-	if(RegOpenKeyEx(hSlot,key0,null,KEY_READ,&hKey)!=ERROR_SUCCESS)
-	{
-		return false;
-	}
-
-	ulong len=4;
-	if(RegQueryValueEx(hKey,key1,null,null,(uchar*)&value,&len)==ERROR_SUCCESS)
-	{		
-		RegCloseKey(hKey);
-		return true;
-	}
-
-	RegCloseKey(hKey);
-	return false;
-#else
-	return false;
-#endif
 }
 
 void App::setCursorOveride(Cursor* cursor)
@@ -552,11 +214,6 @@ Cursor* App::getCursorOveride()
 void App::setMinimumTickMillisInterval(int interval)
 {
 	_minimumTickMillisInterval=interval;
-}
-
-void App::main(int argc,char* argv[])
-{
-	//dummy
 }
 
 void App::run()
@@ -663,7 +320,142 @@ void App::internalKeyReleased(KeyCode code,SurfaceBase* surfaceBase)
 
 void App::init()
 {
-	// dummy
+	_instance=this;
+	_externalMain=false;
+	_running=false;
+	_keyFocus=null;
+	_oldMouseFocus=null;
+	_mouseFocus=null;
+	_mouseCapture=null;
+	_wantedKeyFocus=null;
+	_scheme=new Scheme();
+	_buildMode=false;
+	_wantedBuildMode=false;
+	_mouseArenaPanel=null;
+	_cursorOveride=null;
+	_nextTickMillis=getTimeMillis();
+	_minimumTickMillisInterval=50;
+
+	for(int i=0;i<MOUSE_LAST;i++)
+	{
+		_mousePressed[i]=false;
+		_mouseDoublePressed[i]=false;
+		_mouseDown[i]=false;
+		_mouseReleased[i]=false;
+	}
+
+	for(int i=0;i<KEY_LAST;i++)
+	{
+		_keyPressed[i]=false;
+		_keyTyped[i]=false;
+		_keyDown[i]=false;
+		_keyReleased[i]=false;
+	}
+#if defined ( WIN32 )
+	_keyTrans[KEY_0]			="0)KEY_0";
+	_keyTrans[KEY_1]			="1!KEY_1";
+	_keyTrans[KEY_2]			="2@KEY_2";
+	_keyTrans[KEY_3]			="3#KEY_3";
+	_keyTrans[KEY_4]			="4$KEY_4";
+	_keyTrans[KEY_5]			="5%KEY_5";
+	_keyTrans[KEY_6]			="6^KEY_6";
+	_keyTrans[KEY_7]			="7&KEY_7";
+	_keyTrans[KEY_8]			="8*KEY_8";
+	_keyTrans[KEY_9]			="9(KEY_9";
+	_keyTrans[KEY_A]			="aAKEY_A";
+	_keyTrans[KEY_B]			="bBKEY_B";
+	_keyTrans[KEY_C]			="cCKEY_C";
+	_keyTrans[KEY_D]			="dDKEY_D";
+	_keyTrans[KEY_E]			="eEKEY_E";
+	_keyTrans[KEY_F]			="fFKEY_F";
+	_keyTrans[KEY_G]			="gGKEY_G";
+	_keyTrans[KEY_H]			="hHKEY_H";
+	_keyTrans[KEY_I]			="iIKEY_I";
+	_keyTrans[KEY_J]			="jJKEY_J";
+	_keyTrans[KEY_K]			="kKKEY_K";
+	_keyTrans[KEY_L]			="lLKEY_L";
+	_keyTrans[KEY_M]			="mMKEY_M";
+	_keyTrans[KEY_N]			="nNKEY_N";
+	_keyTrans[KEY_O]			="oOKEY_O";
+	_keyTrans[KEY_P]			="pPKEY_P";
+	_keyTrans[KEY_Q]			="qQKEY_Q";
+	_keyTrans[KEY_R]			="rRKEY_R";
+	_keyTrans[KEY_S]			="sSKEY_S";
+	_keyTrans[KEY_T]			="tTKEY_T";
+	_keyTrans[KEY_U]			="uUKEY_U";
+	_keyTrans[KEY_V]			="vVKEY_V";
+	_keyTrans[KEY_W]			="wWKEY_W";
+	_keyTrans[KEY_X]			="xXKEY_X";
+	_keyTrans[KEY_Y]			="yYKEY_Y";
+	_keyTrans[KEY_Z]			="zZKEY_Z";
+	_keyTrans[KEY_PAD_0]		="0\0KEY_PAD_0";
+	_keyTrans[KEY_PAD_1]		="1\0KEY_PAD_1";
+	_keyTrans[KEY_PAD_2]		="2\0KEY_PAD_2";
+	_keyTrans[KEY_PAD_3]		="3\0KEY_PAD_3";
+	_keyTrans[KEY_PAD_4]		="4\0KEY_PAD_4";
+	_keyTrans[KEY_PAD_5]		="5\0KEY_PAD_5";
+	_keyTrans[KEY_PAD_6]		="6\0KEY_PAD_6";
+	_keyTrans[KEY_PAD_7]		="7\0KEY_PAD_7";
+	_keyTrans[KEY_PAD_8]		="8\0KEY_PAD_8";
+	_keyTrans[KEY_PAD_9]		="9\0KEY_PAD_9";
+	_keyTrans[KEY_PAD_DIVIDE]	="//KEY_PAD_DIVIDE";
+	_keyTrans[KEY_PAD_MULTIPLY]	="**KEY_PAD_MULTIPLY";
+	_keyTrans[KEY_PAD_MINUS]	="--KEY_PAD_MINUS";
+	_keyTrans[KEY_PAD_PLUS]		="++KEY_PAD_PLUS";
+	_keyTrans[KEY_PAD_ENTER]	="\0\0KEY_PAD_ENTER";
+	_keyTrans[KEY_PAD_DECIMAL]	=".\0KEY_PAD_DECIMAL";
+	_keyTrans[KEY_LBRACKET]		="[{KEY_LBRACKET";
+	_keyTrans[KEY_RBRACKET]		="]}KEY_RBRACKET";
+	_keyTrans[KEY_SEMICOLON]	=";:KEY_SEMICOLON";
+	_keyTrans[KEY_APOSTROPHE]	="'\"KEY_APOSTROPHE";
+	_keyTrans[KEY_BACKQUOTE]	="`~KEY_BACKQUOTE";
+	_keyTrans[KEY_COMMA]		=",<KEY_COMMA";
+	_keyTrans[KEY_PERIOD]		=".>KEY_PERIOD";
+	_keyTrans[KEY_SLASH]		="/?KEY_SLASH";
+	_keyTrans[KEY_BACKSLASH]	="\\|KEY_BACKSLASH";
+	_keyTrans[KEY_MINUS]		="-_KEY_MINUS";
+	_keyTrans[KEY_EQUAL]		="=+KEY_EQUAL";
+	_keyTrans[KEY_ENTER]		="\0\0KEY_ENTER";
+	_keyTrans[KEY_SPACE]		="  KEY_SPACE";
+	_keyTrans[KEY_BACKSPACE]	="\0\0KEY_BACKSPACE";
+	_keyTrans[KEY_TAB]			="\0\0KEY_TAB";
+	_keyTrans[KEY_CAPSLOCK]		="\0\0KEY_CAPSLOCK";
+	_keyTrans[KEY_NUMLOCK]		="\0\0KEY_NUMLOCK";
+	_keyTrans[KEY_ESCAPE]		="\0\0KEY_ESCAPE";
+	_keyTrans[KEY_SCROLLLOCK]	="\0\0KEY_SCROLLLOCK";
+	_keyTrans[KEY_INSERT]		="\0\0KEY_INSERT";
+	_keyTrans[KEY_DELETE]		="\0\0KEY_DELETE";
+	_keyTrans[KEY_HOME]			="\0\0KEY_HOME";
+	_keyTrans[KEY_END]			="\0\0KEY_END";
+	_keyTrans[KEY_PAGEUP]		="\0\0KEY_PAGEUP";
+	_keyTrans[KEY_PAGEDOWN]		="\0\0KEY_PAGEDOWN";
+	_keyTrans[KEY_BREAK]		="\0\0KEY_BREAK";
+	_keyTrans[KEY_LSHIFT]		="\0\0KEY_LSHIFT";
+	_keyTrans[KEY_RSHIFT]		="\0\0KEY_RSHIFT";
+	_keyTrans[KEY_LALT]			="\0\0KEY_LALT";
+	_keyTrans[KEY_RALT]			="\0\0KEY_RALT";
+	_keyTrans[KEY_LCONTROL]		="\0\0KEY_LCONTROL";
+	_keyTrans[KEY_RCONTROL]		="\0\0KEY_RCONTROL";
+	_keyTrans[KEY_LWIN]			="\0\0KEY_LWIN";
+	_keyTrans[KEY_RWIN]			="\0\0KEY_RWIN";
+	_keyTrans[KEY_APP]			="\0\0KEY_APP";
+	_keyTrans[KEY_UP]			="\0\0KEY_UP";
+	_keyTrans[KEY_LEFT]			="\0\0KEY_LEFT";
+	_keyTrans[KEY_DOWN]			="\0\0KEY_DOWN";
+	_keyTrans[KEY_RIGHT]		="\0\0KEY_RIGHT";
+	_keyTrans[KEY_F1]			="\0\0KEY_F1";
+	_keyTrans[KEY_F2]			="\0\0KEY_F2";
+	_keyTrans[KEY_F3]			="\0\0KEY_F3";
+	_keyTrans[KEY_F4]			="\0\0KEY_F4";
+	_keyTrans[KEY_F5]			="\0\0KEY_F5";
+	_keyTrans[KEY_F6]			="\0\0KEY_F6";
+	_keyTrans[KEY_F7]			="\0\0KEY_F7";
+	_keyTrans[KEY_F8]			="\0\0KEY_F8";
+	_keyTrans[KEY_F9]			="\0\0KEY_F9";
+	_keyTrans[KEY_F10]			="\0\0KEY_F10";
+	_keyTrans[KEY_F11]			="\0\0KEY_F11";
+	_keyTrans[KEY_F12]			="\0\0KEY_F12";
+#endif
 }
 
 void App::updateMouseFocus(int x,int y,SurfaceBase* surfaceBase)
@@ -696,21 +488,113 @@ void App::setMouseFocus(Panel* newMouseFocus)
 
 void App::surfaceBaseCreated(SurfaceBase* surfaceBase)
 {
-	// dummy
+	_surfaceBaseDar.putElement(surfaceBase);
 }
 
 void App::surfaceBaseDeleted(SurfaceBase* surfaceBase)
 {
-	// dummy
-}
-
-void App::platTick()
-{
-#if defined ( _WIN32 )
-#endif
+	_surfaceBaseDar.removeElement(surfaceBase);
+	_mouseFocus=null;
+	_mouseCapture=null;
+	_keyFocus=null;
 }
 
 void App::internalTick()
 {
-	// dummy
+	if(getTimeMillis()<_nextTickMillis)
+		return;
+
+	platTick();
+
+	int x,y;
+	getCursorPos(x,y);
+
+	bool within=false;
+	for(int i=0;i<_surfaceBaseDar.getCount();i++)
+	{
+		updateMouseFocus(x,y,_surfaceBaseDar[i]);
+
+		if(_surfaceBaseDar[i]->isWithin(x,y))
+			within=true;
+
+		_surfaceBaseDar[i]->setEmulatedCursorPos(x,y);
+	}
+
+	if(!within)
+		setMouseFocus(null);
+
+	if(_mouseFocus)
+		_mouseFocus->internalSetCursor();
+
+	for(int i=0;i<_tickSignalDar.getCount();i++)
+	{
+		_tickSignalDar[i]->ticked();
+	}
+
+	if(_keyFocus)
+		_keyFocus->internalKeyFocusTicked();
+
+	for(int i=0;i<MOUSE_LAST;i++)
+	{
+		_mousePressed[i]=false;
+		_mouseDoublePressed[i]=false;
+		_mouseDown[i]=false;
+		_mouseReleased[i]=false;
+	}
+
+	for(int i=0;i<KEY_LAST;i++)
+	{
+		_keyPressed[i]=false;
+		_keyTyped[i]=false;
+		_keyDown[i]=false;
+		_keyReleased[i]=false;
+	}
+
+	int j=0;
+	for(;j<_surfaceBaseDar.getCount();j++)
+	{
+		if(_surfaceBaseDar[j]->hasFocus())
+			break;
+	}
+	if(j==_surfaceBaseDar.getCount())
+		_wantedKeyFocus=null;
+
+	if(_keyFocus!=_wantedKeyFocus)
+	{
+		if(_keyFocus)
+		{
+			_keyFocus->internalFocusChanged(true);
+			_keyFocus->repaint();
+		}
+
+		if(_wantedKeyFocus)
+		{
+			_wantedKeyFocus->internalFocusChanged(false);
+			_wantedKeyFocus->repaint();
+		}
+	}
+	_keyFocus=_wantedKeyFocus;
+	_buildMode=_wantedBuildMode;
+
+	for(int i=0;i<_surfaceBaseDar.getCount();i++)
+	{
+		_surfaceBaseDar[i]->getPanel()->solveTraverse();
+		_surfaceBaseDar[i]->applyChanges();
+	}
+
+	if(_mouseArenaPanel)
+	{
+		SurfaceBase* surfaceBase=_mouseArenaPanel->getSurfaceBase();
+		if(surfaceBase)
+		{
+			int x,y;
+			surfaceBase->getPanel()->getPos(x,y);
+
+			int x0,y0,x1,y1;
+			_mouseArenaPanel->getAbsExtents(x0,y0,x1,y1);
+			internalSetMouseArena(x+x0,y+y0,x+x1,y+y1,true);
+		}
+	}
+
+	_nextTickMillis=getTimeMillis()+_minimumTickMillisInterval;
 }

@@ -1,0 +1,249 @@
+//========= Copyright ?1996-2002, Valve LLC, All rights reserved. ============
+//
+// Purpose: 
+//
+// $NoKeywords: $
+//=============================================================================
+
+#include "VGUI.h"
+#include "VGUI_TabPanel.h"
+#include "VGUI_Border.h"
+#include "VGUI_ToggleButton.h"
+#include "VGUI_ActionSignal.h"
+#include "VGUI_ButtonGroup.h"
+
+using namespace vgui;
+
+class FooClientBorder : public Border
+{
+public:
+	virtual void paintBorder(Panel* panel)
+	{
+		int wide,tall;
+		panel->getSize(wide,tall);
+
+		drawSetColor(Scheme::sc_black);
+		drawFilledRect(0,0,wide-1,1);
+		drawFilledRect(0,1,1,tall-1);
+
+		drawSetColor(Scheme::sc_secondary1);
+		drawFilledRect(0,tall-1,wide,tall);
+		drawFilledRect(wide-1,0,wide,tall-1);
+	}
+};
+
+class FooTabAreaBorder : public Border
+{
+public:
+	virtual void paintBorder(Panel* panel)
+	{
+		int wide,tall;
+		panel->getSize(wide,tall);
+
+		drawSetColor(Scheme::sc_white);
+		drawFilledRect(0,tall-1,wide,tall);
+	}
+};
+
+class FooTabPanelTab : public ToggleButton, public ActionSignal
+{
+public:
+	FooTabPanelTab(TabPanel* tabPanel,const char* text,int x,int y) : ToggleButton(text,x,y)
+	{
+		_tabPanel=tabPanel;
+		addActionSignal(this);
+	}
+	bool isWithin(int x,int y)
+	{
+		return Panel::isWithin(x,y);
+	}
+	void actionPerformed(Panel* panel)
+	{
+		_tabPanel->setSelectedTab(this);
+	}
+	void paintBackground()
+	{
+		int wide,tall;
+		getPaintSize(wide,tall);
+
+		if(isSelected())
+		{
+			drawSetColor(Scheme::sc_secondary3);
+			drawFilledRect(0,0,wide,tall);
+			drawSetColor(Scheme::sc_secondary1);
+			drawFilledRect(0,0,wide,1);
+			drawFilledRect(0,1,1,tall-1);
+			drawFilledRect(wide-1,1,wide,tall-1);
+			drawSetColor(Scheme::sc_white);
+			drawFilledRect(1,1,wide-1,2);
+			drawFilledRect(1,2,2,tall);
+			drawFilledRect(0,tall-1,1,tall);
+			drawFilledRect(wide-1,tall-1,wide,tall);
+		}
+		else
+		{
+			drawSetColor(Scheme::sc_secondary2);
+			drawFilledRect(0,0,wide,tall);
+			drawSetColor(Scheme::sc_secondary1);
+			drawFilledRect(0,0,wide,1);
+			drawFilledRect(0,1,1,tall-1);
+			drawFilledRect(wide-1,1,wide,tall-1);
+			drawSetColor(Scheme::sc_secondary3);
+			drawFilledRect(1,1,wide-1,2);
+			drawFilledRect(1,2,2,tall);
+			drawFilledRect(0,tall-1,1,tall);
+			drawFilledRect(wide-1,tall-1,wide,tall);
+			drawSetColor(Scheme::sc_white);
+			drawFilledRect(0,tall-1,wide,tall);
+		}
+	}
+private:
+	TabPanel* _tabPanel;
+};
+
+TabPanel::TabPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
+{
+	_tabPlacement=tp_top;
+
+	_clientArea=new Panel(5,5,wide-10,tall-10);
+	_clientArea->setParent(this);
+	_clientArea->setBorder(new FooClientBorder());
+
+	_tabArea=new Panel(5,5,wide,5);
+	_tabArea->setParent(this);
+	_tabArea->setBorder(new FooTabAreaBorder());
+
+	_selectedTab=null;
+	_selectedPanel=null;
+	_buttonGroup=new ButtonGroup();
+}
+
+Panel* TabPanel::addTab(const char* text)
+{
+	FooTabPanelTab* tab=new FooTabPanelTab(this,text,0,0);
+	_tabArea->insertChildAt(tab,0);
+	tab->setButtonGroup(_buttonGroup);
+
+	Panel* panel=new Panel(0,0,20,20);
+	_clientArea->insertChildAt(panel,0);
+	panel->setVisible(false);
+
+	if(!_selectedTab)
+	{
+		_selectedTab=tab;
+		_selectedPanel=panel;
+		panel->setVisible(true);
+		tab->setSelected(true);
+	}
+
+	recomputeLayout();
+	return panel;
+}
+
+void TabPanel::setSelectedTab(Panel* tab)
+{
+	if(tab!=null&&tab!=_selectedTab)
+	{
+		for(int i=0;i<_tabArea->getChildCount();i++)
+		{
+			if(_tabArea->getChild(i)==tab)
+			{
+				_selectedPanel->setVisible(false);
+				_selectedPanel=_clientArea->getChild(i);
+				_selectedPanel->setVisible(true);
+				_selectedTab=tab;
+				break;
+			}
+		}
+
+		recomputeLayout();
+	}
+}
+
+void TabPanel::setSize(int wide,int tall)
+{
+	Panel::setSize(wide,tall);
+
+	recomputeLayout();
+}
+
+void TabPanel::recomputeLayoutTop()
+{
+	int x=0;
+	int y=0;
+	int i,wide,tall;
+
+	int paintWide,paintTall;
+	getPaintSize(paintWide,paintTall);
+
+	const int minx=5;
+	int maxx=paintWide-minx;
+	int inRowCount=0;
+
+	x=minx;
+	for(i=_tabArea->getChildCount()-1;i>=0;i--)
+	{
+		_tabArea->getChild(i)->getPreferredSize(wide,tall);
+		_tabArea->getChild(i)->setSize(wide,tall);
+		if(x+wide>maxx)
+		{
+			if(inRowCount)
+			{
+				int extra=(maxx-x)/inRowCount;
+				int error=maxx-(inRowCount*extra)-x;
+				int extraAccum=0;
+				for(int j=i+inRowCount;j>i;j--)
+				{
+					int ww,tt,xx,yy;
+					int extra2=extra;
+					if(j==i+inRowCount)
+					{
+						extra2+=error;
+					}
+					_tabArea->getChild(j)->getPreferredSize(ww,tt);
+					_tabArea->getChild(j)->getPos(xx,yy);
+					_tabArea->getChild(j)->setBounds(xx+extraAccum,yy,ww+extra2,tt);
+					extraAccum+=extra2;
+				}
+			}
+			maxx-=minx;
+			x=minx;
+			y-=tall-4;
+			inRowCount=0;
+		}
+		_tabArea->getChild(i)->setPos(x,y);
+		inRowCount++;
+		x+=wide-1;
+	}
+
+	int miny;
+	_tabArea->getChild(0)->getPos(x,miny);
+	for(i=0;i<_tabArea->getChildCount();i++)
+	{
+		_tabArea->getChild(i)->getPos(x,y);
+		_tabArea->getChild(i)->setPos(x,y-miny);
+	}
+
+	_tabArea->getChild(0)->getSize(wide,tall);
+	_tabArea->setBounds(0,5,paintWide,tall-miny);
+	_tabArea->getSize(wide,tall);
+	_clientArea->setBounds(0,tall+4,paintWide,paintTall-tall-5);
+	_clientArea->getSize(wide,tall);
+
+	for(i=0;i<_clientArea->getChildCount();i++)
+	{
+		_clientArea->getChild(i)->setBounds(5,5,wide-10,tall-10);
+		_clientArea->getChild(i)->invalidateLayout(false);
+	}
+}
+
+void TabPanel::recomputeLayout()
+{
+	if(_tabArea->getChildCount()!=0)
+	{
+		if(_tabPlacement==0)
+			recomputeLayoutTop();
+		repaint();
+	}
+}
+

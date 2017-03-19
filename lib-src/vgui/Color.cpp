@@ -7,6 +7,7 @@
 
 #include "VGUI.h"
 #include "VGUI_Color.h"
+#include "VGUI_App.h"
 
 using namespace vgui;
 
@@ -23,6 +24,8 @@ Color::Color(int r,int g,int b,int a)
 
 Color::Color(Scheme::SchemeColor sc)
 {
+	init();
+	setColor(sc);
 }
 
 void Color::init()
@@ -40,6 +43,7 @@ void Color::setColor(int r,int g,int b,int a)
 	_color[1]=g;
 	_color[2]=b;
 	_color[3]=a;
+	_schemeColor=Scheme::sc_user;
 }
 
 void Color::setColor(Scheme::SchemeColor sc)
@@ -49,10 +53,17 @@ void Color::setColor(Scheme::SchemeColor sc)
 
 void Color::getColor(int& r,int& g,int& b,int& a)
 {
-	r=_color[0];
-	g=_color[1];
-	b=_color[2];
-	a=_color[3];
+	if(_schemeColor==Scheme::sc_user)
+	{
+		r=_color[0];
+		g=_color[1];
+		b=_color[2];
+		a=_color[3];
+	}
+	else
+	{
+		App::getInstance()->getScheme()->getColor(_schemeColor,r,g,b,a);
+	}
 }
 
 void Color::getColor(Scheme::SchemeColor& sc)

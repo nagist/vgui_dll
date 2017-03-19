@@ -28,12 +28,7 @@ void MiniApp::getName(char* buf,int bufLen)
 	buf[len-1]=0;
 }
 
-Frame* MiniApp::createInstance()
-{
-	return null;
-}
-
 void MiniApp::setName(const char* name)
 {
-	_name=vgui_strdup(_name);
+	_name=strdup(_name);
 }

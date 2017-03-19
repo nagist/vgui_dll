@@ -10,8 +10,8 @@
 #include "VGUI_Dar.h"
 #include "fileimage.h"
 #include "vfontdata.h"
-#include "utlrbtree.h"
-#include "vgui_linux.h"
+#include <windows.h>
+#include "vgui_win32.h"
 
 using namespace vgui;
 
@@ -23,25 +23,12 @@ namespace vgui
 class FontPlat : public BaseFontPlat
 {
 protected:
-	struct font_name_entry
-	{
-		char *m_OSSpecificName;
-		uint8 m_cbOSSpecificName;
-		char *m_pchFriendlyName;
-	};
-
-	bool ms_bSetFriendlyNameCacheLessFunc;
-	CUtlRBTree<font_name_entry, int> m_FriendlyNameCache;
-
-	static bool FontLessFunc( const font_name_entry &lhs, const font_name_entry &rhs )
-	{
-		return strcasecmp( rhs.m_pchFriendlyName, lhs.m_pchFriendlyName ) > 0;
-	}
-
-	virtual int getWide()
-	{
-		return m_iMaxCharWidth;
-	}
+	HFONT m_hFont;
+	HDC m_hDC;
+	HBITMAP m_hDIB;
+	TEXTMETRIC tm;
+	enum { ABCWIDTHS_CACHE_SIZE = 256 };
+	ABC m_ABCWidthsCache[ABCWIDTHS_CACHE_SIZE];
 
 	int bufSize[2];
 	uchar* buf;
@@ -49,121 +36,186 @@ protected:
 	VFontData m_BitmapFont;
 	bool m_bBitmapFont;
 
-	char m_szName[32];
+	char *m_szName;
+	int m_iWide;
 	int m_iTall;
+	float m_flRotation;
 	int m_iWeight;
-	int m_iFlags;
-	bool m_bAntiAliased;
-	bool m_bRotary;
-	bool m_bAdditive;
-	int m_iDropShadowOffset;
-	bool m_bUnderlined;
-	int m_iOutlineSize;
-	int m_iHeight;
-	int m_iMaxCharWidth;
-	int m_iAscent;
-
-	// abc widths
-	struct abc_t
-	{
-		short b;
-		char a;
-		char c;
-	};
-
-	// On PC we cache char widths on demand when actually requested to minimize our use of the kernels 
-	// paged pool (GDI may cache information about glyphs we have requested and take up lots of paged pool)
-	struct abc_cache_t
-	{
-		wchar_t wch;
-		abc_t abc;
-	};
-	CUtlRBTree<abc_cache_t, unsigned short> m_ExtendedABCWidthsCache;
-	static bool ExtendedABCWidthsCacheLessFunc(const abc_cache_t &lhs, const abc_cache_t &rhs);
-
-	int m_iScanLines;
-	int m_iBlur;
-	float *m_pGaussianDistribution;
+	bool m_bItalic;
+	bool m_bUnderline;
+	bool m_bStrikeOut;
+	bool m_bSymbol;
 
 public:
-	FontPlat(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol) : m_ExtendedABCWidthsCache(256, 0, &ExtendedABCWidthsCacheLessFunc)
+	FontPlat(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 	{
-		m_bBitmapFont = false;
-
-		strncpy( m_szName, name, sizeof( m_szName ));
+		m_szName = strdup(name);
 		m_iTall = tall;
+		m_iWide = wide;
+		m_flRotation = rotation;
 		m_iWeight = weight;
-		m_iFlags = 0;
-		m_bAntiAliased = false;
-		m_bUnderlined = underline;
-		m_iDropShadowOffset = 0;
-		m_iOutlineSize = 0;
-		m_iBlur = 0;
-		m_iScanLines = 0;
-		m_bRotary = false;
-		m_bAdditive = false;
+		m_bItalic = italic;
+		m_bUnderline = underline;
+		m_bStrikeOut = strikeout;
+		m_bSymbol = symbol;
+
+		int charset = symbol ? SYMBOL_CHARSET : ANSI_CHARSET;
+		m_hFont = ::CreateFontA(tall, wide, rotation*10, rotation*10, 
+										weight, 
+										italic, 
+										underline, 
+										strikeout, 
+										charset, 
+										OUT_DEFAULT_PRECIS, 
+										CLIP_DEFAULT_PRECIS, 
+										DEFAULT_QUALITY, 
+										DEFAULT_PITCH, 
+										m_szName);
+
+		m_hDC = ::CreateCompatibleDC(NULL);
+
+		// set as the active font
+		::SelectObject(m_hDC, m_hFont);
+		::SetTextAlign(m_hDC, TA_LEFT | TA_TOP | TA_UPDATECP);
+
+		// get info about the font
+		GetTextMetrics(m_hDC, &tm);
+
+		// code for rendering to a bitmap
+		bufSize[0] = tm.tmMaxCharWidth;
+		bufSize[1] = tm.tmHeight + tm.tmAscent + tm.tmDescent;
+
+		::BITMAPINFOHEADER header;
+		memset(&header, 0, sizeof(header));
+		header.biSize = sizeof(header);
+		header.biWidth = bufSize[0];
+		header.biHeight = -bufSize[1];
+		header.biPlanes = 1;
+		header.biBitCount = 32;
+		header.biCompression = BI_RGB;
+
+		m_hDIB = ::CreateDIBSection(m_hDC, (BITMAPINFO*)&header, DIB_RGB_COLORS, (void**)(&buf), NULL, 0);
+		::SelectObject(m_hDC, m_hDIB);
+
+		// get char spacing
+		// a is space before character (can be negative)
+		// b is the width of the character
+		// c is the space after the character
+		memset(m_ABCWidthsCache, 0, sizeof(m_ABCWidthsCache));
+		if (!::GetCharABCWidthsA(m_hDC, 0, ABCWIDTHS_CACHE_SIZE - 1, m_ABCWidthsCache))
+		{
+			// since that failed, it must be fixed width, zero everything so a and c will be zeros, then
+			// fill b with the value from TEXTMETRIC
+			for (int i = 0; i < ABCWIDTHS_CACHE_SIZE; i++)
+			{
+				m_ABCWidthsCache[i].abcB = (char)tm.tmAveCharWidth;
+			}
+		}
 	}
 
 	virtual ~FontPlat()
 	{
 	}
 
-	bool ExtendedABCWidthsCacheLessFunc(const abc_cache_t &lhs, const abc_cache_t &rhs)
-	{
-		return lhs.wch < rhs.wch;
-	}
-
 	virtual bool equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 	{
 		if (!stricmp(name, m_szName) 
 			&& m_iTall == tall
+			&& m_iWide == wide
+			&& m_flRotation == rotation
 			&& m_iWeight == weight
-			&& m_bUnderline == underline)
+			&& m_bItalic == italic
+			&& m_bUnderline == underline
+			&& m_bStrikeOut == strikeout
+			&& m_bSymbol == symbol)
 			return true;
 
 		return false;
 	}
 
-	void CreateFontList()
-	{
-	}
-
 	virtual void getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
 	{
+		// set us up to render into our dib
+		::SelectObject(m_hDC, m_hFont);
+
+		// use render-to-bitmap to get our font texture
+		::SetBkColor(m_hDC, RGB(0, 0, 0));
+		::SetTextColor(m_hDC, RGB(255, 255, 255));
+		::SetBkMode(m_hDC, OPAQUE);
+		::MoveToEx(m_hDC, -m_ABCWidthsCache[ch].abcA, 0, NULL);
+
+		// render the character
+		char wch = (char)ch;
+		::ExtTextOutA(m_hDC, 0, 0, 0, NULL, &wch, 1, NULL);
+		::SetBkMode(m_hDC, TRANSPARENT);
+
+		int wide = m_ABCWidthsCache[ch].abcB;
+		if (wide > bufSize[0])
+		{
+			wide = bufSize[0];
+		}
+		int tall = tm.tmHeight;
+		if (tall > bufSize[1])
+		{
+			tall = bufSize[1];
+		}
+
+		// iterate through copying the generated dib into the texture
+		for (int j = 0; j < tall; j++)
+		{
+			for (int i = 0; i < wide; i++)
+			{
+				int x = rgbaX + i;
+				int y = rgbaY + j;
+				if ((x < rgbaWide) && (y < rgbaTall))
+				{
+					unsigned char *src = &buf[(j*bufSize[0]+i)*4];
+
+					float r = (src[0]) / 255.0f;
+					float g = (src[1]) / 255.0f;
+					float b = (src[2]) / 255.0f;
+
+					// Don't want anything drawn for tab characters.
+					if (ch == '\t')
+					{
+						r = g = b = 0;
+					}
+
+					unsigned char *dst = &rgba[(y*rgbaWide+x)*4];
+					dst[0] = (unsigned char)(r * 255.0f);
+					dst[1] = (unsigned char)(g * 255.0f);
+					dst[2] = (unsigned char)(b * 255.0f);
+					dst[3] = (unsigned char)((r * 0.34f + g * 0.55f + b * 0.11f) * 255.0f);
+				}
+			}
+		}
 	}
 
 	virtual void getCharABCwide(int ch,int& a,int& b,int& c)
 	{
-		// look for it in the cache
-		abc_cache_t finder = { (wchar_t)ch };
+		a = m_ABCWidthsCache[ch].abcA;
+		b = m_ABCWidthsCache[ch].abcB;
+		c = m_ABCWidthsCache[ch].abcC;
 
-		unsigned short i = m_ExtendedABCWidthsCache.Find(finder);
-		if (m_ExtendedABCWidthsCache.IsValidIndex(i))
+		if (a < 0)
 		{
-			a = m_ExtendedABCWidthsCache[i].abc.a;
-			b = m_ExtendedABCWidthsCache[i].abc.b;
-			c = m_ExtendedABCWidthsCache[i].abc.c;
-			return;
+			a = 0;
 		}
 	}
 
 	virtual int getTall()
 	{
-		return m_iHeight;
+		return tm.tmHeight;
 	}
 	virtual void drawSetTextFont(SurfacePlat* plat)
 	{
+		::SelectObject(plat->hdc, m_hFont);
 	}
 };
 
 class FontPlat_Bitmap : public BaseFontPlat
 {
 protected:
-	virtual int getWide()
-	{
-		return m_FontData.m_BitmapCharWidth;
-	}
-
 	VFontData m_FontData;
 	char *m_pName;
 

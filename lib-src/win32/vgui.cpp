@@ -20,7 +20,7 @@ int vgui_dprintf(const char* format,...)
 	int ret=vsprintf(buf,format,argList);
 	va_end(argList);
 
-	fputs(buf, stderr);
+	::OutputDebugString(buf);
 	return ret;
 }
 
@@ -36,7 +36,7 @@ int vgui_dprintf2(const char* format,...)
 	int ret=vsprintf(buf+strlen(buf),format,argList);
 	va_end(argList);
 
-	fputs(buf, stderr);
+	::OutputDebugString(buf);
 	return ret;
 }
 }

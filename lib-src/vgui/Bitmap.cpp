@@ -12,7 +12,7 @@
 
 using namespace vgui;
 
-Bitmap::Bitmap()
+Bitmap::Bitmap() : Image()
 {
 	_rgba=null;
 	_id=0;

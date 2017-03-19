@@ -7,10 +7,11 @@
 
 #include "VGUI.h"
 #include "VGUI_Border.h"
+#include "VGUI_Image.h"
 
 using namespace vgui;
 
-Border::Border()
+Border::Border() : Image()
 {
 	_inset[0]=0;
 	_inset[1]=0;
@@ -19,7 +20,7 @@ Border::Border()
 	_panel=null;
 }
 
-Border::Border(int left,int top,int right,int bottom)
+Border::Border(int left,int top,int right,int bottom) : Image()
 {
 	_inset[0]=0;
 	_inset[1]=0;

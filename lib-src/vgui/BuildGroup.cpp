@@ -51,7 +51,7 @@ bool BuildGroup::isEnabled()
 
 void BuildGroup::addCurrentPanelChangeSignal(ChangeSignal* s)
 {
-	// dummy
+	_currentPanelChangeSignalDar.putElement(s);
 }
 
 Panel* BuildGroup::getCurrentPanel()
@@ -61,7 +61,17 @@ Panel* BuildGroup::getCurrentPanel()
 
 void BuildGroup::copyPropertiesToClipboard()
 {
-	// dummy
+	char text[32768];
+	text[0]=0;
+	for(int i=0;i<_panelDar.getCount();i++)
+	{
+		char buf[512];
+		_panelDar[i]->getPersistanceText(buf,sizeof(buf));
+		strcat(text,_panelNameDar[i]);
+		strcat(text,buf);
+	}
+	App::getInstance()->setClipboardText(text,strlen(text));
+	vgui_printf("Copied to clipboard\n");
 }
 
 void BuildGroup::applySnap(Panel* panel)
@@ -82,7 +92,8 @@ void BuildGroup::fireCurrentPanelChangeSignal()
 
 void BuildGroup::panelAdded(Panel* panel,const char* panelName)
 {
-	// dummy
+	_panelDar.addElement(panel);
+	_panelNameDar.addElement(vgui_strdup(panelName));
 }
 
 void BuildGroup::cursorMoved(int x,int y,Panel* panel)
@@ -152,7 +163,47 @@ void BuildGroup::mouseDoublePressed(MouseCode code,Panel* panel)
 
 void BuildGroup::keyTyped(KeyCode code,Panel* panel)
 {
-	// dummy
+	int dx=0;
+	int dy=0;
+
+	bool shift=(panel->isKeyDown(KEY_LSHIFT)||panel->isKeyDown(KEY_RSHIFT));
+	bool ctrl=(panel->isKeyDown(KEY_LCONTROL)||panel->isKeyDown(KEY_RCONTROL));
+
+	switch(code)
+	{
+	case KEY_LEFT:
+		dx=-_snapX;
+		break;
+	case KEY_RIGHT:
+		dx=_snapX;
+		break;
+	case KEY_UP:
+		dy=-_snapY;
+		break;
+	case KEY_DOWN:
+		dy=_snapY;
+		break;
+	case KEY_C:
+		if(ctrl)
+			copyPropertiesToClipboard();
+		break;
+	}
+
+	if(dx||dy)
+	{
+		int x,y,wide,tall;
+		panel->getBounds(x,y,wide,tall);
+		if(shift)
+			panel->setSize(dx+wide,dy+tall);
+		else
+			panel->setPos(dx+x,dy+y);
+
+		applySnap(panel);
+		panel->repaint();
+
+		if(panel->getParent())
+			panel->getParent()->repaint();
+	}
 }
 
 Cursor* BuildGroup::getCursor(Panel* panel)

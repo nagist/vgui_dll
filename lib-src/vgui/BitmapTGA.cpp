@@ -110,9 +110,9 @@ bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 							ptr[0]=dis.readUChar(success);
 							if(!success)
 								return false;
-							ptr[3]=255;
+							ptr[3]=0;
 							if(invertAlpha)
-								ptr[3]=0;
+								ptr[3]=255;
 							ptr+=4;
 							break;
 					case 32:
@@ -157,9 +157,9 @@ bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 								color[0]=dis.readUChar(success);
 								if(!success)
 									return false;
-								color[3]=255;
+								color[3]=0;
 								if(invertAlpha)
-									color[3]=0;
+									color[3]=255;
 								break;
 						case 32:
 								color[2]=dis.readUChar(success);

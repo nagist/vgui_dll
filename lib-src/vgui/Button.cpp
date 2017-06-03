@@ -5,16 +5,17 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Button.h"
-#include "VGUI_ButtonController.h"
-#include "VGUI_InputSignal.h"
-#include "VGUI_ButtonGroup.h"
-#include "VGUI_TreeFolder.h"
-#include "VGUI_ActionSignal.h"
+#include<VGUI_Button.h>
+#include<VGUI_ButtonController.h>
+#include<VGUI_InputSignal.h>
+#include<VGUI_ButtonGroup.h>
+#include<VGUI_TreeFolder.h>
+#include<VGUI_ActionSignal.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooDefaultButtonController : public ButtonController, public InputSignal
 {
 public:
@@ -22,70 +23,69 @@ public:
 	{
 		_button=button;
 	}
-	void addSignals(Button* button)
+public:
+	virtual void addSignals(Button* button)
 	{
 		button->addInputSignal(this);
 	}
-	void removeSignals(Button* button)
+	virtual void removeSignals(Button* button)
 	{
 		button->removeInputSignal(this);
 	}
-	void cursorMoved(int x,int y,Panel* panel)
+public:
+	virtual void cursorMoved(int x,int y,Panel* panel)
 	{
 	}
-	void cursorEntered(Panel* panel)
+	virtual void cursorEntered(Panel* panel)
 	{
 	}
-	void cursorExited(Panel* panel)
+	virtual void cursorExited(Panel* panel)
 	{
 	}
-	void mousePressed(MouseCode code,Panel* panel)
+	virtual void mousePressed(MouseCode code,Panel* panel)
 	{
-		if(_button->isEnabled()&&_button->isMouseClickEnabled(code))
+		if(_button->isEnabled())
 		{
-			_button->setSelected(true);
-			_button->repaint();
+			if(_button->isMouseClickEnabled(code))
+			{
+				_button->setSelected(true);
+				_button->repaint();
+			}
 		}
 	}
-	void mouseDoublePressed(MouseCode code,Panel* panel)
+	virtual void mouseDoublePressed(MouseCode code,Panel* panel)
 	{
 	}
-	void mouseReleased(MouseCode code,Panel* panel)
+	virtual void mouseReleased(MouseCode code,Panel* panel)
 	{
-		if(_button->isEnabled()&&_button->isMouseClickEnabled(code))
+		if(_button->isEnabled())
 		{
-			_button->setSelected(false);
-			_button->fireActionSignal();
-			_button->repaint();
+			if(_button->isMouseClickEnabled(code))
+			{
+				_button->setSelected(false);
+				_button->fireActionSignal();
+				_button->repaint();
+			}
 		}
 	}
-	void mouseWheeled(int delta,Panel* panel)
+	virtual void mouseWheeled(int delta,Panel* panel)
 	{
 	}
-	void keyPressed(KeyCode code,Panel* panel)
+	virtual void keyPressed(KeyCode code,Panel* panel)
 	{
 	}
-	void keyTyped(KeyCode code,Panel* panel)
+	virtual void keyTyped(KeyCode code,Panel* panel)
 	{
 	}
-	void keyReleased(KeyCode code,Panel* panel)
+	virtual void keyReleased(KeyCode code,Panel* panel)
 	{
 	}
-	void keyFocusTicked(Panel* panel)
+	virtual void keyFocusTicked(Panel* panel)
 	{
 	}
-private:
+protected:
 	Button* _button;
 };
-
-Button::Button(const char* text,int x,int y,int wide,int tall) : Label(text,x,y,wide,tall)
-{
-	init();
-}
-
-Button::Button(const char* text,int x,int y) : Label(text,x,y)
-{
-	init();
 }
 
 void Button::init()
@@ -100,13 +100,30 @@ void Button::init()
 	setButtonController(new FooDefaultButtonController(this));
 }
 
+Button::Button(const char* text,int x,int y,int wide,int tall) : Label(text,x,y,wide,tall)
+{
+	init();
+}
+
+Button::Button(const char* text,int x,int y) : Label(text,x,y)
+{
+	init();
+}
+
+void Button::setButtonBorderEnabled(bool state)
+{
+	_buttonBorderEnabled=state;
+	repaint();
+}
+
 void Button::setSelected(bool state)
 {
-	if(_buttonGroup)
+	if(_buttonGroup!=null)
 	{
 		_buttonGroup->setSelected(this);
 		return;
 	}
+
 	setSelectedDirect(state);
 }
 
@@ -122,9 +139,9 @@ void Button::setArmed(bool state)
 	repaint();
 }
 
-bool Button::isSelected()
+bool Button::isArmed()
 {
-	return _selected;
+	return _armed;
 }
 
 void Button::doClick()
@@ -134,27 +151,66 @@ void Button::doClick()
 	setSelected(false);
 }
 
-void Button::addActionSignal(ActionSignal* s)
+bool Button::isSelected()
 {
-	_actionSignalDar.putElement(s);
+	return _selected;
+}
+
+void Button::paintBackground()
+{
+	int wide,tall;
+	getPaintSize(wide,tall);
+
+	if(isSelected())
+	{
+		drawSetColor(Scheme::sc_secondary2);
+		drawFilledRect(0,0,wide,tall);
+	}
+	else
+	{
+		drawSetColor(Scheme::sc_secondary3);
+		drawFilledRect(0,0,wide,tall);
+
+		if(_buttonBorderEnabled)
+		{
+			drawSetColor(Scheme::sc_secondary1);
+			drawFilledRect(0,0,_size[0]-1,1);                   // top
+			drawFilledRect(2,_size[1]-2,_size[0]-1,_size[1]-1); // bottom
+			drawFilledRect(0,1,1,_size[1]-1);                   // left
+			drawFilledRect(_size[0]-2,2,_size[0]-1,_size[1]-2); // right
+
+			drawSetColor(Scheme::sc_white);
+			drawFilledRect(1,1,_size[0]-2,2);                 // top
+			drawFilledRect(1,_size[1]-1,_size[0],_size[1]);   // bottom
+			drawFilledRect(1,2,2,_size[1]-2);                 // left
+			drawFilledRect(_size[0]-1,1,_size[0],_size[1]-1); // right
+		}
+	}
+
+	if(isArmed())
+	{
+		drawSetColor(Scheme::sc_white);
+		drawFilledRect(0,0,wide,2);
+		drawFilledRect(0,2,2,tall);
+
+		drawSetColor(Scheme::sc_secondary2);
+		drawFilledRect(2,tall-2,wide,tall);
+		drawFilledRect(wide-2,2,wide,tall-1);
+
+		drawSetColor(Scheme::sc_secondary1);
+		drawFilledRect(1,tall-1,wide,tall);
+		drawFilledRect(wide-1,1,wide,tall-1);
+	}
 }
 
 void Button::setButtonGroup(ButtonGroup* buttonGroup)
 {
 	_buttonGroup=buttonGroup;
-	if(_buttonGroup)
+
+	if(_buttonGroup!=null)
+	{
 		_buttonGroup->addButton(this);
-}
-
-bool Button::isArmed()
-{
-	return false;
-}
-
-void Button::setButtonBorderEnabled(bool state)
-{
-	_buttonBorderEnabled=state;
-	repaint();
+	}
 }
 
 void Button::setMouseClickEnabled(MouseCode code,bool state)
@@ -180,69 +236,38 @@ bool Button::isMouseClickEnabled(MouseCode code)
 	return false;
 }
 
+void Button::addActionSignal(ActionSignal* s)
+{
+	_actionSignalDar.putElement(s);
+}
+
 void Button::fireActionSignal()
 {
 	for(int i=0;i<_actionSignalDar.getCount();i++)
+	{
 		_actionSignalDar[i]->actionPerformed(this);
-}
-
-Panel* Button::createPropertyPanel()
-{
-	Panel* panel=Label::createPropertyPanel();
-	TreeFolder* folder=new TreeFolder("Button");
-	panel->addChild(folder);
-	folder->addChild(new Label("setSelected"));
-	folder->addChild(new Label("setArmed"));
-	return panel;
+	}
 }
 
 void Button::setButtonController(ButtonController* buttonController)
 {
-	if(_buttonController)
+	if(_buttonController!=null)
+	{
 		_buttonController->removeSignals(this);
+	}
+
 	_buttonController=buttonController;
 	_buttonController->addSignals(this);
 }
 
-void Button::paintBackground()
+Panel* Button::createPropertyPanel()
 {
-	int wide,tall;
-	getPaintSize(wide,tall);
+	Panel* parentPropertyPanel=Label::createPropertyPanel();
 
-	if(isSelected())
-	{
-		drawSetColor(Scheme::sc_secondary2);
-		drawFilledRect(0,0,wide,tall);
-	}
-	else
-	{
-		drawSetColor(Scheme::sc_secondary3);
-		drawFilledRect(0,0,wide,tall);
-		if(_buttonBorderEnabled)
-		{
-			drawSetColor(Scheme::sc_secondary1);
-			drawFilledRect(0,0,_size[0]-1,1);
-			drawFilledRect(2,_size[1]-2,_size[0]-1,_size[1]-1);
-			drawFilledRect(0,1,1,_size[1]-1);
-			drawFilledRect(_size[0]-2,2,_size[0]-1,_size[1]-2);
-			drawSetColor(Scheme::sc_white);
-			drawFilledRect(1,1,_size[0]-2,2);
-			drawFilledRect(1,_size[1]-1,_size[0],_size[1]);
-			drawFilledRect(1,2,2,_size[1]-2);
-			drawFilledRect(_size[0]-1,1,_size[0],_size[1]-1);
-		}
-	}
+	TreeFolder* folder=new TreeFolder("Button");
+	parentPropertyPanel->addChild(folder);
+	folder->addChild(new Label("setSelected"));
+	folder->addChild(new Label("setArmed"));
 
-	if(isArmed())
-	{
-		drawSetColor(Scheme::sc_white);
-		drawFilledRect(0,0,wide,2);
-		drawFilledRect(0,2,2,tall);
-		drawSetColor(Scheme::sc_secondary2);
-		drawFilledRect(2,tall-2,wide,tall);
-		drawFilledRect(wide-2,2,wide,tall-1);
-		drawSetColor(Scheme::sc_secondary1);
-		drawFilledRect(1,tall-1,wide,tall);
-		drawFilledRect(wide-1,1,wide,tall-1);
-	}
+	return parentPropertyPanel;
 }

@@ -5,16 +5,17 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <stdio.h>
-#include "VGUI.h"
-#include "VGUI_Surface.h"
-#include "VGUI_Cursor.h"
-#include "VGUI_KeyCode.h"
-#include "VGUI_Panel.h"
-#include "VGUI_App.h"
-#include "VGUI_ImagePanel.h"
-#include "VGUI_Bitmap.h"
-#include "VGUI_Font.h"
+#include<assert.h>
+#include<stdio.h>
+#include<VGUI_Surface.h>
+#include<VGUI_Cursor.h>
+#include<VGUI_KeyCode.h>
+#include<VGUI_Panel.h>
+#include<VGUI_App.h>
+#include<VGUI_ImagePanel.h>
+#include<VGUI_Bitmap.h>
+#include<VGUI_Font.h>
+#include"vgui_linux.h"
 
 using namespace vgui;
 
@@ -132,7 +133,7 @@ void Surface::pushMakeCurrent(Panel* panel,bool useInsets)
 {
 	int inset[4];
 
-	//!! need to make the inset part of VPanel
+	//!! need to make the inset part of Panel
 	panel->getInset(inset[0],inset[1],inset[2],inset[3]);
 
 	if(!useInsets)
@@ -163,6 +164,8 @@ void Surface::enableMouseCapture(bool state)
 
 void Surface::setCursor(Cursor* cursor)
 {
+	_currentCursor = cursor;
+
 	if (cursor != null)
 	{
 		_emulatedCursor->setImage(cursor->getBitmap());
@@ -257,4 +260,5 @@ void Surface::setAsTopMost(bool state)
 
 bool Surface::isWithin(int x,int y)
 {
+	return false;
 }

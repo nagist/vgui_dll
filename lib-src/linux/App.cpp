@@ -5,9 +5,10 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_App.h"
-#include "VGUI_SurfaceBase.h"
+#include<VGUI_App.h>
+#include<VGUI_SurfaceBase.h>
+#include"vgui_linux.h"
+#include<sys/time.h>
 
 using namespace vgui;
 
@@ -37,11 +38,11 @@ long App::getTimeMillis()
 
 	if (!secbase)
 	{
-		secbase = tp.tv_usec;
+		secbase = tp.tv_sec;
 		return tp.tv_usec / 1000000.0;
 	}
 
-	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
+	return (tp.tv_sec - secbase) * 1000 + tp.tv_usec / 1000.0;
 }
 
 void App::setClipboardText(const char* text,int textLen)
@@ -70,6 +71,7 @@ bool App::getRegistryString(const char* key,char* value,int valueLen)
 
 bool App::setRegistryInteger(const char* key,int value)
 {
+	return false;
 }
 
 bool App::getRegistryInteger(const char* key,int& value)

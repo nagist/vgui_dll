@@ -5,10 +5,9 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <string.h>
-#include <stdio.h>
-#include "VGUI.h"
-#include "VGUI_String.h"
+#include<string.h>
+#include<stdio.h>
+#include<VGUI_String.h>
 
 using namespace vgui;
 
@@ -19,10 +18,10 @@ String::String()
 
 String::String(const char* text)
 {
-	int count=getCount(text);
-	_text=new char[count+1];
-	memcpy(_text,text,count);
-	_text[count]=0;
+	int len=getCount(text);
+	_text=new char[len+1];
+	memcpy(_text,text,len);
+	_text[len]=0;
 }
 
 String::String(const String& src)
@@ -37,10 +36,15 @@ String::~String()
 
 int String::getCount(const char* text)
 {
-	int count=0;
-	while(text[count])
-		count++;
-	return count;
+	int ctr;
+	for(ctr=0;;ctr++)
+	{
+		if(text[ctr]==0)
+		{
+			break;
+		}
+	}
+	return ctr;
 }
 
 int String::getCount()
@@ -50,60 +54,64 @@ int String::getCount()
 
 String String::operator+(String text)
 {
-	int c1=getCount();
-	int c2=text.getCount();
+	int len0=getCount();
+	int len1=text.getCount();
 
 	String* newString=new String();
-	newString->_text=new char[c1+c2+1];
-	memcpy(newString->_text,_text,c1);
-	memcpy(newString->_text+c1,text._text,c1);
-	newString->_text[c1+c2]=0;
+	newString->_text=new char[len0+len1+1];
+	memcpy(newString->_text,_text,len0);
+	memcpy(newString->_text+len0,text._text,len1);
+	newString->_text[len0+len1]=0;
 
 	return String(*newString);
 }
 
 String String::operator+(const char* text)
 {
-	int c1=getCount();
-	int c2=getCount(text);
+	int len0=getCount();
+	int len1=getCount(text);
 
 	String* newString=new String();
-	newString->_text=new char[c1+c2+1];
-	memcpy(newString->_text,_text,c1);
-	memcpy(newString->_text+c1,text,c1);
-	newString->_text[c1+c2]=0;
+	newString->_text=new char[len0+len1+1];
+	memcpy(newString->_text,_text,len0);
+	memcpy(newString->_text+len0,text,len1);
+	newString->_text[len0+len1]=0;
 
 	return String(*newString);
 }
 
 bool String::operator==(String text)
 {
-	const char* p1=_text;
-	const char* p2=text._text;
-	while(1)
+	char *text2=text._text;
+
+	int ctr;
+	for(ctr=0;;ctr++)
 	{
-		if(*p1!=*p2)
+		if(_text[ctr]!=text2[ctr])
+		{
 			return false;
-		if(!*p1)
+		}
+		if(_text[ctr]==0)
+		{
 			break;
-		p1++;
-		p2++;
+		}
 	}
 	return true;
 }
 
 bool String::operator==(const char* text)
 {
-	const char* p1=_text;
-	const char* p2=text;
-	while(1)
+	int ctr;
+	for(ctr=0;;ctr++)
 	{
-		if(*p1!=*p2)
+		if(_text[ctr]!=text[ctr])
+		{
 			return false;
-		if(!*p1)
+		}
+		if(_text[ctr]==0)
+		{
 			break;
-		p1++;
-		p2++;
+		}
 	}
 	return true;
 }

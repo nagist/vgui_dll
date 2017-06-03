@@ -5,64 +5,52 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Slider.h"
-#include "VGUI_InputSignal.h"
-#include "VGUI_IntChangeSignal.h"
-#include "VGUI_App.h"
+#include<VGUI_Slider.h>
+#include<VGUI_InputSignal.h>
+#include<VGUI_App.h>
+#include<VGUI_IntChangeSignal.h>
+#include<VGUI_MouseCode.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooDefaultSliderSignal : public InputSignal
 {
+private:
+	Slider* _slider;
 public:
 	FooDefaultSliderSignal(Slider* slider)
 	{
 		_slider=slider;
 	}
+public:
 	void cursorMoved(int x,int y,Panel* panel)
 	{
 		_slider->privateCursorMoved(x,y,panel);
 	}
-	void cursorEntered(Panel* panel)
-	{
-	}
-	void cursorExited(Panel* panel)
-	{
-	}
+	void cursorEntered(Panel* panel){}
+	void cursorExited(Panel* panel){}
+	void mouseDoublePressed(MouseCode code,Panel* panel){}
 	void mousePressed(MouseCode code,Panel* panel)
 	{
 		_slider->privateMousePressed(code,panel);
-	}
-	void mouseDoublePressed(MouseCode code,Panel* panel)
-	{
 	}
 	void mouseReleased(MouseCode code,Panel* panel)
 	{
 		_slider->privateMouseReleased(code,panel);
 	}
-	void mouseWheeled(int delta,Panel* panel)
-	{
-	}
-	void keyPressed(KeyCode code,Panel* panel)
-	{
-	}
-	void keyTyped(KeyCode code,Panel* panel)
-	{
-	}
-	void keyReleased(KeyCode code,Panel* panel)
-	{
-	}
-	void keyFocusTicked(Panel* panel)
-	{
-	}
-private:
-	Slider* _slider;
+	void mouseWheeled(int delta,Panel* panel){}
+	void keyPressed(KeyCode code,Panel* panel){}
+	void keyTyped(KeyCode code,Panel* panel){}
+	void keyReleased(KeyCode code,Panel* panel){}
+	void keyFocusTicked(Panel* panel){}
 };
+}
 
-Slider::Slider(int x,int y,int wide,int tall,bool vertical)
+Slider::Slider(int x,int y,int wide,int tall,bool vertical) : Panel(x,y,wide,tall)
 {
-	_vertical=vertical;
+	_vertical=vertical;	
 	_dragging=false;
 	_value=0;
 	_range[0]=0;
@@ -72,6 +60,17 @@ Slider::Slider(int x,int y,int wide,int tall,bool vertical)
 	_buttonOffset=0;
 	recomputeNobPosFromValue();
 	addInputSignal(new FooDefaultSliderSignal(this));
+}
+
+void Slider::setSize(int wide,int tall)
+{
+	Panel::setSize(wide,tall);
+	recomputeNobPosFromValue();
+}
+
+bool Slider::isVertical()
+{
+	return _vertical;
 }
 
 void Slider::setValue(int value)
@@ -87,9 +86,8 @@ void Slider::setValue(int value)
 	{
 		value=_range[1];
 	}
-
+	
 	_value=value;
-
 	recomputeNobPosFromValue();
 
 	if(_value!=oldValue)
@@ -103,14 +101,216 @@ int Slider::getValue()
 	return _value;
 }
 
-bool Slider::isVertical()
+void Slider::recomputeNobPosFromValue()
 {
-	return _vertical;
+	int wide,tall;
+
+	getPaintSize(wide,tall);
+
+	float fwide=(float)wide;
+	float ftall=(float)tall;
+	float frange=(float)(_range[1]-_range[0]);
+	float fvalue=(float)(_value-_range[0]);
+	float fper=fvalue/frange;
+	float frangewindow=(float)(_rangeWindow);
+	
+	if(frangewindow<0)
+	{
+		frangewindow=0;
+	}
+
+	if(!_rangeWindowEnabled)
+	{
+		frangewindow=frange;
+	}
+
+	if ( frangewindow > 0 )
+	{
+		if(_vertical)
+		{
+			float fnobsize=ftall/frangewindow*ftall;
+			float freepixels = ftall - fnobsize;
+
+			float firstpixel = freepixels * fper;
+
+			_nobPos[0]=(int)( firstpixel );
+			_nobPos[1]=(int)( firstpixel + fnobsize );
+
+			if(_nobPos[1]>tall)
+			{
+				_nobPos[0]=tall-((int)fnobsize);
+				_nobPos[1]=tall;
+			}
+		}
+		else
+		{
+			float fnobsize=fwide/frangewindow*fwide;
+			float freepixels = fwide - fnobsize;
+
+			float firstpixel = freepixels * fper;
+
+			_nobPos[0]=(int)( firstpixel );
+			_nobPos[1]=(int)( firstpixel + fnobsize );
+
+			if(_nobPos[1]>wide)
+			{
+				_nobPos[0]=wide-((int)fnobsize);
+				_nobPos[1]=wide;
+			}
+		}
+	}
+	
+	repaint();
 }
 
+void Slider::recomputeValueFromNobPos()
+{
+	int wide,tall;
+	getPaintSize(wide,tall);
+
+	float fwide=(float)wide;
+	float ftall=(float)tall;
+	float frange=(float)(_range[1]-_range[0]);
+	float fvalue=(float)(_value-_range[0]);
+	float fnob=(float)_nobPos[0];
+	float frangewindow=(float)(_rangeWindow);
+
+	if(frangewindow<0)
+	{
+		frangewindow=0;
+	}
+
+	if(!_rangeWindowEnabled)
+	{
+		frangewindow=frange;
+	}
+
+	if ( frangewindow > 0 )
+	{
+		float fnobsize;
+
+		if(_vertical)
+		{
+			fnobsize=ftall/frangewindow*ftall;
+			fvalue=frange*(fnob/(ftall-fnobsize));
+		}
+		else
+		{
+			fnobsize=fwide/frangewindow*fwide;
+			fvalue=frange*(fnob/(fwide-fnobsize));
+		}
+	}
+	// Take care of rounding issues.
+	_value=(int)(fvalue+_range[0]+0.5);
+
+	// Clamp final result
+	_value = ( _value < _range[1] ) ? _value : _range[1];
+}
+
+bool Slider::hasFullRange()
+{
+	int wide,tall;
+	getPaintSize(wide,tall);
+
+	float fwide=(float)wide;
+	float ftall=(float)tall;
+	float frange=(float)(_range[1]-_range[0]);
+	float frangewindow=(float)(_rangeWindow);
+
+	if(frangewindow<0)
+	{
+		frangewindow=0;
+	}
+
+	if(!_rangeWindowEnabled)
+	{
+		frangewindow=frange;
+	}
+
+	if ( frangewindow > 0 )
+	{
+		if(_vertical)
+		{
+			if( frangewindow <= ( ftall + _buttonOffset ) )
+			{
+				return true;
+			}
+		}
+		else
+		{
+			if( frangewindow <= ( fwide + _buttonOffset ) )
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+	
 void Slider::addIntChangeSignal(IntChangeSignal* s)
 {
 	_intChangeSignalDar.putElement(s);
+}
+
+void Slider::fireIntChangeSignal()
+{	
+	for(int i=0;i<_intChangeSignalDar.getCount();i++)
+	{
+		_intChangeSignalDar[i]->intChanged(getValue(),this);
+	}
+}
+
+void Slider::paintBackground()
+{
+	int wide,tall;
+	getPaintSize(wide,tall);
+
+	if (_vertical)
+	{
+		drawSetColor(Scheme::sc_secondary1);
+		drawFilledRect(0,0,wide,1);           // top
+		drawFilledRect(0,tall-1,wide,tall);   // bottom
+		drawFilledRect(0,1,1,tall-1);         // left
+		drawFilledRect(wide-1,1,wide,tall-1); // right
+
+		drawSetColor(Scheme::sc_secondary2);
+		drawFilledRect(1,1,wide-1,2);
+		drawFilledRect(1,2,3,tall-1);
+		drawFilledRect(2,_nobPos[1],wide-1,_nobPos[1]+1);
+
+		drawSetColor(Scheme::sc_secondary3);
+		drawFilledRect(2,2,wide-1,tall-1);
+
+		drawSetColor(Scheme::sc_primary1);
+		drawFilledRect(0,_nobPos[0],wide,_nobPos[0]+1);      // top
+		drawFilledRect(0,_nobPos[1],wide,_nobPos[1]+1);      // bottom
+		drawFilledRect(0,_nobPos[0]+1,1,_nobPos[1]);         // left
+		drawFilledRect(wide-1,_nobPos[0]+1,wide,_nobPos[1]); // right
+
+		drawSetColor(Scheme::sc_primary3);
+		drawFilledRect(1,_nobPos[0]+1,wide-1,_nobPos[0]+2);
+		drawFilledRect(1,_nobPos[0]+2,2,_nobPos[1]);
+
+		drawSetColor(Scheme::sc_primary2);
+		drawFilledRect(2,_nobPos[0]+2,wide-1,_nobPos[1]);
+	}
+	else
+	{
+		//!! doesn't work
+
+		drawSetColor(Scheme::sc_secondary3);
+		drawFilledRect(0,0,wide,tall);
+
+		drawSetColor(Scheme::sc_black);
+		drawOutlinedRect(0,0,wide,tall);
+
+		drawSetColor(Scheme::sc_primary2);
+		drawFilledRect(_nobPos[0],0,_nobPos[1],tall);
+		
+		drawSetColor(Scheme::sc_black);
+		drawOutlinedRect(_nobPos[0],0,_nobPos[1],tall);
+	}
 }
 
 void Slider::setRange(int min,int max)
@@ -127,193 +327,12 @@ void Slider::setRange(int min,int max)
 
 	_range[0]=min;
 	_range[1]=max;
-
-	if(_value<_range[0])
-	{
-		_value=_range[0];
-	}
-	else if( _value>_range[1])
-	{
-		_value=_range[1];
-	}
 }
 
 void Slider::getRange(int& min,int& max)
 {
 	min=_range[0];
 	max=_range[1];
-}
-
-void Slider::setRangeWindow(int rangeWindow)
-{
-	_rangeWindow=rangeWindow;
-}
-
-void Slider::setRangeWindowEnabled(bool state)
-{
-	_rangeWindowEnabled=state;
-}
-
-void Slider::setSize(int wide,int tall)
-{
-	Panel::setSize(wide,tall);
-
-	recomputeNobPosFromValue();
-}
-
-void Slider::getNobPos(int& min, int& max)
-{
-	min=_nobPos[0];
-	max=_nobPos[1];
-}
-
-bool Slider::hasFullRange()
-{
-	int wide,tall;
-	getPaintSize(wide,tall);
-
-	float fwide=(float)wide;
-	float ftall=(float)tall;
-	float frange=(float)(_range[1]-_range[0]);
-	float frangewindow=(float)_rangeWindow;
-
-	if(frangewindow<0)
-	{
-		frangewindow=0;
-	}
-
-	if(!_rangeWindowEnabled)
-	{
-		frangewindow=frange;
-	}
-
-	if(frangewindow>0)
-	{
-		if(_vertical)
-		{
-			if(frangewindow<=(ftall+_buttonOffset))
-			{
-				return true;
-			}
-		}
-		else
-		{
-			if(frangewindow<=(fwide+_buttonOffset))
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-void Slider::setButtonOffset(int buttonOffset)
-{
-	_buttonOffset=buttonOffset;
-}
-
-void Slider::recomputeNobPosFromValue()
-{
-	int wide,tall;
-	getPaintSize(wide,tall);
-
-	float fwide=(float)wide;
-	float ftall=(float)tall;
-	float frange=(float)(_range[1]-_range[0]);
-	float fvalue=(float)(_value-_range[0]);
-	float fper=fvalue/frange;
-	float frangewindow=(float)_rangeWindow;
-
-	if(frangewindow<0)
-	{
-		frangewindow=0;
-	}
-
-	if(!_rangeWindowEnabled)
-	{
-		frangewindow=frange;
-	}
-
-	if(frangewindow>0)
-	{
-		if(_vertical)
-		{
-			float fnobsize=ftall/frangewindow*ftall;
-			float freepixels=ftall-fnobsize;
-
-			float firstpixel=freepixels*fper;
-
-			_nobPos[0]=(int)(freepixels);
-			_nobPos[1]=(int)(freepixels+fnobsize);
-
-			if(_nobPos[1]>tall)
-			{
-				_nobPos[0]=(int)(tall-fnobsize);
-				_nobPos[1]=(int)tall;
-			}
-		}
-		else
-		{
-			float fnobsize=fwide/frangewindow*fwide;
-			float freepixels=fwide-fnobsize;
-
-			float firstpixel=freepixels*fper;
-
-			_nobPos[0]=(int)(freepixels);
-			_nobPos[1]=(int)(freepixels+fnobsize);
-
-			if(_nobPos[1]>wide)
-			{
-				_nobPos[0]=(int)(wide-fnobsize);
-				_nobPos[1]=(int)wide;
-			}
-		}
-	}
-
-	repaint();
-}
-
-void Slider::recomputeValueFromNobPos()
-{
-	int wide,tall;
-	getPaintSize(wide,tall);
-
-	float fwide=(float)wide;
-	float ftall=(float)tall;
-	float frange=(float)(_range[1]-_range[0]);
-	float fvalue=(float)(_value-_range[0]);
-	float fnob=(float)_nobPos[0];
-	float frangewindow=(float)_rangeWindow;
-
-	if(frangewindow<0)
-	{
-		frangewindow=0;
-	}
-
-	if(!_rangeWindowEnabled)
-	{
-		frangewindow=frange;
-	}
-
-	if(frangewindow>0)
-	{
-		float fnobsize;
-
-		if(_vertical)
-		{
-			fnobsize=ftall/frangewindow*ftall;
-			fvalue=frange*(fnob/(ftall-fnobsize));
-		}
-		else
-		{
-			fnobsize=fwide/frangewindow*fwide;
-			fvalue=frange*(fnob/(fwide-fnobsize));
-		}
-	}
-
-	_value=(int)(fvalue+_range[0]+0.5);
-	_value=(_value<_range[1])?_value:_range[1];
 }
 
 void Slider::privateCursorMoved(int x,int y,Panel* panel)
@@ -331,29 +350,37 @@ void Slider::privateCursorMoved(int x,int y,Panel* panel)
 
 	if(_vertical)
 	{
-		_nobPos[0]=y+(_nobDragStartPos[0]-_dragStartPos[1]);
-		_nobPos[1]=y+(_nobDragStartPos[1]-_dragStartPos[1]);
+		_nobPos[0]=_nobDragStartPos[0]+(y-_dragStartPos[1]);
+		_nobPos[1]=_nobDragStartPos[1]+(y-_dragStartPos[1]);
+
 		if(_nobPos[1]>tall)
 		{
-			_nobPos[0]=tall+(_nobPos[0]-_nobPos[1]);
+			_nobPos[0]=tall-(_nobPos[1]-_nobPos[0]);
 			_nobPos[1]=tall;
+		}
+		
+		if(_nobPos[0]<0)
+		{
+			_nobPos[1]=_nobPos[1]-_nobPos[0];
+			_nobPos[0]=0;
 		}
 	}
 	else
 	{
-		_nobPos[0]=x+(_nobDragStartPos[0]-_dragStartPos[0]);
-		_nobPos[1]=x+(_nobDragStartPos[1]-_dragStartPos[0]);
+		_nobPos[0]=_nobDragStartPos[0]+(x-_dragStartPos[0]);
+		_nobPos[1]=_nobDragStartPos[1]+(x-_dragStartPos[0]);
+
 		if(_nobPos[1]>wide)
 		{
-			_nobPos[0]=wide+(_nobPos[0]-_nobPos[1]);
+			_nobPos[0]=wide-(_nobPos[1]-_nobPos[0]);
 			_nobPos[1]=wide;
 		}
-	}
-
-	if(_nobPos[0]<0)
-	{
-		_nobPos[1]=_nobPos[1]-_nobPos[0];
-		_nobPos[0]=0;
+		
+		if(_nobPos[0]<0)
+		{
+			_nobPos[1]=_nobPos[1]-_nobPos[0];
+			_nobPos[0]=0;
+		}
 	}
 
 	recomputeValueFromNobPos();
@@ -369,9 +396,9 @@ void Slider::privateMousePressed(MouseCode code,Panel* panel)
 
 	if(_vertical)
 	{
-		if ((y>=_nobPos[0])&&(y<_nobPos[1]))
+		if((y>=_nobPos[0])&&(y<_nobPos[1]))
 		{
-			_dragging = true;
+			_dragging=true;
 			getApp()->setMouseCapture(this);
 			_nobDragStartPos[0]=_nobPos[0];
 			_nobDragStartPos[1]=_nobPos[1];
@@ -381,9 +408,9 @@ void Slider::privateMousePressed(MouseCode code,Panel* panel)
 	}
 	else
 	{
-		if ((x>=_nobPos[0])&&(x<_nobPos[1]))
+		if((x>=_nobPos[0])&&(x<_nobPos[1]))
 		{
-			_dragging = true;
+			_dragging=true;
 			getApp()->setMouseCapture(this);
 			_nobDragStartPos[0]=_nobPos[0];
 			_nobDragStartPos[1]=_nobPos[1];
@@ -391,6 +418,7 @@ void Slider::privateMousePressed(MouseCode code,Panel* panel)
 			_dragStartPos[1]=y;
 		}
 	}
+
 }
 
 void Slider::privateMouseReleased(MouseCode code,Panel* panel)
@@ -399,58 +427,23 @@ void Slider::privateMouseReleased(MouseCode code,Panel* panel)
 	getApp()->setMouseCapture(null);
 }
 
-void Slider::fireIntChangeSignal()
+void Slider::getNobPos(int& min, int& max)
 {
-	for(int i=0;i<_intChangeSignalDar.getCount();i++)
-		_intChangeSignalDar[i]->intChanged(getValue(),this);
+	min=_nobPos[0];
+	max=_nobPos[1];
 }
 
-void Slider::paintBackground()
+void Slider::setRangeWindow(int rangeWindow)
 {
-	int wide,tall;
-	getPaintSize(wide,tall);
-	if(_vertical)
-	{
-		drawSetColor(Scheme::sc_secondary1);
-		drawFilledRect(0,0,wide,1);
-		drawFilledRect(0,tall-1,wide,tall);
-		drawFilledRect(0,1,1,tall-1);
-		drawFilledRect(wide-1,1,wide,tall-1);
-
-		drawSetColor(Scheme::sc_secondary2);
-		drawFilledRect(1,1,wide-1,2);
-		drawFilledRect(1,2,3,tall-1);
-		drawFilledRect(2,_nobPos[1],wide-1,_nobPos[1]+1);
-
-		drawSetColor(Scheme::sc_secondary3);
-		drawFilledRect(2,2,wide-1,tall-1);
-
-		drawSetColor(Scheme::sc_primary1);
-		drawFilledRect(0,_nobPos[0],wide,_nobPos[0]+1);
-		drawFilledRect(0,_nobPos[1],wide,_nobPos[1]+1);
-		drawFilledRect(0,_nobPos[0]+1,1,_nobPos[1]);
-		drawFilledRect(wide-1,_nobPos[0]+1,wide,_nobPos[1]);
-
-		drawSetColor(Scheme::sc_primary3);
-		drawFilledRect(1,_nobPos[0]+1,wide-1,_nobPos[0]+2);
-		drawFilledRect(1,_nobPos[0]+2,2,_nobPos[1]);
-
-		drawSetColor(Scheme::sc_primary2);
-		drawFilledRect(2,_nobPos[0]+2,wide-1,_nobPos[1]);
-	}
-	else
-	{
-		drawSetColor(Scheme::sc_secondary3);
-		drawFilledRect(0,0,wide,tall);
-
-		drawSetColor(Scheme::sc_black);
-		drawFilledRect(0,0,wide,tall);
-
-		drawSetColor(Scheme::sc_primary2);
-		drawFilledRect(_nobPos[0],0,_nobPos[1],tall);
-
-		drawSetColor(Scheme::sc_black);
-		drawFilledRect(_nobPos[0],0,_nobPos[1],tall);
-	}
+	_rangeWindow=rangeWindow;
 }
 
+void Slider::setRangeWindowEnabled(bool state)
+{
+	_rangeWindowEnabled=state;
+}
+
+void Slider::setButtonOffset(int buttonOffset)
+{
+	_buttonOffset=buttonOffset;
+}

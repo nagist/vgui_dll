@@ -5,9 +5,6 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Font.h"
-#include "fileimage.h"
 #include "vfontdata.h"
 
 VFontData::VFontData()

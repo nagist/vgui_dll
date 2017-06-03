@@ -5,13 +5,15 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_WizardPanel.h"
-#include "VGUI_ActionSignal.h"
-#include "VGUI_App.h"
+#include<assert.h>
+#include<VGUI_WizardPanel.h>
+#include<VGUI_ActionSignal.h>
+#include<VGUI_App.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooBackHandler : public ActionSignal
 {
 private:
@@ -21,6 +23,7 @@ public:
 	{
 		_wizardPanel=wizardPanel;
 	}
+public:
 	virtual void actionPerformed(Panel* panel)
 	{
 		_wizardPanel->doBack();
@@ -36,6 +39,7 @@ public:
 	{
 		_wizardPanel=wizardPanel;
 	}
+public:
 	virtual void actionPerformed(Panel* panel)
 	{
 		_wizardPanel->doNext();
@@ -44,6 +48,10 @@ public:
 
 void fooGetText(const char* src,char* dst,int dstLen)
 {
+	assert(dst!=null);
+	assert(dstLen>=0);
+	assert(src!=null);
+
 	int srcLen=strlen(src)+1;
 	if(srcLen>dstLen)
 	{
@@ -53,17 +61,6 @@ void fooGetText(const char* src,char* dst,int dstLen)
 	memcpy(dst,src,srcLen-1);
 	dst[srcLen-1]=0;
 }
-
-void WizardPanel::WizardPage::fireSwitchingToBackPageSignals()
-{
-	for(int i=0;i<_switchingToBackPageSignalDar.getCount();i++)
-		_switchingToBackPageSignalDar[i]->actionPerformed(this);
-}
-
-void WizardPanel::WizardPage::fireSwitchingToNextPageSignals()
-{
-	for(int i=0;i<_switchingToBackPageSignalDar.getCount();i++)
-		_switchingToBackPageSignalDar[i]->actionPerformed(this);
 }
 
 void WizardPanel::WizardPage::init()
@@ -73,13 +70,13 @@ void WizardPanel::WizardPage::init()
 	_backButtonEnabled=false;
 	_nextButtonEnabled=false;
 	_finishedButtonEnabled=false;
+	_cancelButtonEnabled=true;
 	_backButtonText=null;
 	_nextButtonText=null;
 	_finishedButtonText=null;
 	_cancelButtonText=null;
 	_wantedFocus=null;
 	_title=null;
-	_cancelButtonEnabled=true;
 	_backButtonVisible=true;
 	_nextButtonVisible=true;
 	_finishedButtonVisible=true;
@@ -248,16 +245,6 @@ void WizardPanel::WizardPage::setCancelButtonText(const char* text)
 	_cancelButtonText=vgui_strdup(text);
 }
 
-void WizardPanel::WizardPage::setWantedFocus(Panel* panel)
-{
-	_wantedFocus=panel;
-}
-
-Panel* WizardPanel::WizardPage::getWantedFocus()
-{
-	return _wantedFocus;
-}
-
 void WizardPanel::WizardPage::addSwitchingToBackPageSignal(ActionSignal* s)
 {
 	_switchingToBackPageSignalDar.putElement(s);
@@ -266,6 +253,22 @@ void WizardPanel::WizardPage::addSwitchingToBackPageSignal(ActionSignal* s)
 void WizardPanel::WizardPage::addSwitchingToNextPageSignal(ActionSignal* s)
 {
 	_switchingToNextPageSignalDar.putElement(s);
+}
+
+void WizardPanel::WizardPage::fireSwitchingToBackPageSignals()
+{
+	for(int i=0;i<_switchingToBackPageSignalDar.getCount();i++)
+	{
+		_switchingToBackPageSignalDar[i]->actionPerformed(this);
+	}
+}
+
+void WizardPanel::WizardPage::fireSwitchingToNextPageSignals()
+{
+	for(int i=0;i<_switchingToBackPageSignalDar.getCount();i++)
+	{
+		_switchingToBackPageSignalDar[i]->actionPerformed(this);
+	}
 }
 
 void WizardPanel::WizardPage::setTitle(const char* title)
@@ -279,78 +282,14 @@ void WizardPanel::WizardPage::getTitle(char* buf,int bufLen)
 	vgui_strcpy(buf,bufLen,_title);
 }
 
-void WizardPanel::fireFinishedActionSignal()
+void WizardPanel::WizardPage::setWantedFocus(Panel* panel)
 {
-	_finishedButton->fireActionSignal();
+	_wantedFocus=panel;
 }
 
-void WizardPanel::fireCancelledActionSignal()
+Panel* WizardPanel::WizardPage::getWantedFocus()
 {
-	_cancelButton->fireActionSignal();
-}
-
-void WizardPanel::firePageChangedActionSignal()
-{
-	for(int i=0;i<_pageChangedActionSignalDar.getCount();i++)
-		_pageChangedActionSignalDar[i]->actionPerformed(this);
-}
-
-void WizardPanel::performLayout()
-{
-	int wide,tall;
-	getPaintSize(wide,tall);
-
-	_backButton->setVisible(false);
-	_nextButton->setVisible(false);
-	_finishedButton->setVisible(false);
-	_cancelButton->setVisible(false);
-
-	if(_currentWizardPage)
-	{
-		int bTall=_backButton->getTall();
-		_currentWizardPage->setBounds(2,2,wide-4,tall-bTall-8);
-
-		char buf[256];
-		int gap=2;
-		int x=wide-gap*2;
-		int y=tall-bTall-gap;
-
-		_currentWizardPage->getCancelButtonText(buf,sizeof(buf));
-		_cancelButton->setText(buf);
-		_cancelButton->setEnabled(_currentWizardPage->isCancelButtonEnabled());
-		_cancelButton->setVisible(_currentWizardPage->isCancelButtonVisible());
-		_cancelButton->setPos(x-_cancelButton->getWide(),y);
-
-		if(_currentWizardPage->isCancelButtonVisible())
-			x-=_cancelButton->getWide()+gap*2;
-
-		_currentWizardPage->getFinishedButtonText(buf,sizeof(buf));
-		_finishedButton->setText(buf);
-		_finishedButton->setEnabled(_currentWizardPage->isFinishedButtonEnabled());
-		_finishedButton->setVisible(_currentWizardPage->isFinishedButtonVisible());
-		_finishedButton->setPos(x-_finishedButton->getWide(),y);
-
-		if(_currentWizardPage->isFinishedButtonVisible())
-			x-=_finishedButton->getWide()+gap*2;
-
-		_currentWizardPage->getNextButtonText(buf,sizeof(buf));
-		_nextButton->setText(buf);
-		_nextButton->setEnabled(_currentWizardPage->isNextButtonEnabled());
-		_nextButton->setVisible(_currentWizardPage->isNextButtonVisible());
-		_nextButton->setPos(x-_nextButton->getWide(),y);
-
-		if(_currentWizardPage->isNextButtonVisible())
-			x-=_nextButton->getWide()+gap*2;
-
-		_currentWizardPage->getBackButtonText(buf,sizeof(buf));
-		_backButton->setText(buf);
-		_backButton->setEnabled(_currentWizardPage->isBackButtonEnabled());
-		_backButton->setVisible(_currentWizardPage->isFinishedButtonVisible());
-		_backButton->setPos(x-_backButton->getWide(),y);
-
-		if(_currentWizardPage->isBackButtonVisible())
-			x-=_backButton->getWide()+gap*2;
-	}
+	return _wantedFocus;
 }
 
 WizardPanel::WizardPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
@@ -372,16 +311,82 @@ WizardPanel::WizardPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	_nextButton->setParent(this);
 }
 
+void WizardPanel::performLayout()
+{
+	int wide,tall;
+	getPaintSize(wide,tall);
+
+	_backButton->setVisible(false);
+	_nextButton->setVisible(false);
+	_finishedButton->setVisible(false);
+	_cancelButton->setVisible(false);
+
+	if(_currentWizardPage!=null)
+	{
+		int bTall=_backButton->getTall();
+		_currentWizardPage->setBounds(2,2,wide-4,tall-bTall-8);
+
+		char buf[256];
+		int gap=2;
+		int x=wide-(gap*2);
+		int y=tall-bTall-gap;
+
+		_currentWizardPage->getCancelButtonText(buf,sizeof(buf));
+		_cancelButton->setText(buf);
+		_cancelButton->setEnabled(_currentWizardPage->isCancelButtonEnabled());
+		_cancelButton->setVisible(_currentWizardPage->isCancelButtonVisible());
+		_cancelButton->setPos(x-_cancelButton->getWide(),y);
+		if(_currentWizardPage->isCancelButtonVisible())
+		{
+			x-=_cancelButton->getWide()+(gap*2);
+		}
+
+		_currentWizardPage->getFinishedButtonText(buf,sizeof(buf));
+		_finishedButton->setText(buf);
+		_finishedButton->setEnabled(_currentWizardPage->isFinishedButtonEnabled());
+		_finishedButton->setVisible(_currentWizardPage->isFinishedButtonVisible());
+		_finishedButton->setPos(x-_finishedButton->getWide(),y);
+		if(_currentWizardPage->isFinishedButtonVisible())
+		{
+			x-=_finishedButton->getWide()+(gap*2);
+		}
+
+		_currentWizardPage->getNextButtonText(buf,sizeof(buf));
+		_nextButton->setText(buf);
+		_nextButton->setEnabled(_currentWizardPage->isNextButtonEnabled());
+		_nextButton->setVisible(_currentWizardPage->isNextButtonVisible());
+		_nextButton->setPos(x-_nextButton->getWide(),y);
+		if(_currentWizardPage->isNextButtonVisible())
+		{
+			x-=_nextButton->getWide()+(gap*2);
+		}
+
+		_currentWizardPage->getBackButtonText(buf,sizeof(buf));
+		_backButton->setText(buf);
+		_backButton->setEnabled(_currentWizardPage->isBackButtonEnabled());
+		_backButton->setVisible(_currentWizardPage->isBackButtonVisible());
+		_backButton->setPos(x-_backButton->getWide(),y);
+		if(_currentWizardPage->isBackButtonVisible())
+		{
+			x-=_backButton->getWide()+(gap*2);
+		}
+	}
+}
+
 void WizardPanel::setCurrentWizardPage(WizardPage* currentWizardPage)
 {
-	if(_currentWizardPage)
+	if(_currentWizardPage!=null)
+	{
 		removeChild(_currentWizardPage);
+	}
 	_currentWizardPage=currentWizardPage;
-	if(_currentWizardPage)
+
+	if(_currentWizardPage!=null)
 	{
 		_currentWizardPage->setParent(this);
 		getApp()->requestFocus(_currentWizardPage->getWantedFocus());
 	}
+
 	firePageChangedActionSignal();
 	invalidateLayout(false);
 }
@@ -401,9 +406,27 @@ void WizardPanel::addPageChangedActionSignal(ActionSignal* s)
 	_pageChangedActionSignalDar.putElement(s);
 }
 
+void WizardPanel::fireFinishedActionSignal()
+{
+	_finishedButton->fireActionSignal();
+}
+
+void WizardPanel::fireCancelledActionSignal()
+{
+	_cancelButton->fireActionSignal();
+}
+
+void WizardPanel::firePageChangedActionSignal()
+{
+	for(int i=0;i<_pageChangedActionSignalDar.getCount();i++)
+	{
+		_pageChangedActionSignalDar[i]->actionPerformed(this);
+	}
+}
+
 void WizardPanel::doBack()
 {
-	if(_currentWizardPage)
+	if(_currentWizardPage!=null)
 	{
 		_currentWizardPage->fireSwitchingToBackPageSignals();
 		setCurrentWizardPage(_currentWizardPage->getBackWizardPage());
@@ -412,7 +435,7 @@ void WizardPanel::doBack()
 
 void WizardPanel::doNext()
 {
-	if(_currentWizardPage)
+	if(_currentWizardPage!=null)
 	{
 		_currentWizardPage->fireSwitchingToNextPageSignals();
 		setCurrentWizardPage(_currentWizardPage->getNextWizardPage());

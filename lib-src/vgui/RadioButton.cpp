@@ -5,30 +5,60 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_RadioButton.h"
-#include "VGUI_Image.h"
+#include<VGUI_RadioButton.h>
 
 using namespace vgui;
+
+namespace
+{
+class FooRadioImage : public Image
+{
+public:
+	FooRadioImage(RadioButton* radioButton) : Image()
+	{
+		_radioButton=radioButton;
+		setSize(20,20);
+	}
+public:
+	virtual void paint()
+	{
+		drawSetTextFont(Scheme::sf_secondary1);
+		drawSetTextColor(Scheme::sc_white);
+		drawPrintChar(0,0,'n');
+		drawSetTextColor(Scheme::sc_secondary2);
+		drawPrintChar(0,0,'j');
+		drawSetTextColor(Scheme::sc_white);
+		drawPrintChar(0,0,'k');
+		drawSetTextColor(Scheme::sc_black);
+		drawPrintChar(0,0,'l');
+		drawSetTextColor(Scheme::sc_secondary3);
+		drawPrintChar(0,0,'m');
+		if(_radioButton->isSelected())
+		{
+			drawSetTextColor(Scheme::sc_black);
+			drawPrintChar(0,0,'h');
+		}
+	}
+protected:
+	RadioButton* _radioButton;
+};
+
+}
 
 RadioButton::RadioButton(const char* text,int x,int y,int wide,int tall) : ToggleButton(text,x,y,wide,tall)
 {
 	setTextAlignment(Label::a_east);
-
-	Image* image=new Image();
-	//image->setSize(20,20);
-	setImage(image);
-	getContentSize(wide,tall);
-	Panel::setSize(wide,tall);
+	setImage(new FooRadioImage(this));
 }
 
 RadioButton::RadioButton(const char* text,int x,int y) : ToggleButton(text,x,y)
 {
 	setTextAlignment(Label::a_east);
+	setImage(new FooRadioImage(this));
 
-	Image* image=new Image();
-	//image->setSize(20,20);
-	setImage(image);
+	int wide,tall;
+	getContentSize(wide,tall);
+	setSize(wide,tall);
 }
 
 void RadioButton::paintBackground()

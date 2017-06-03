@@ -5,15 +5,16 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_ListPanel.h"
-#include "VGUI_StackLayout.h"
-#include "VGUI_ScrollBar.h"
-#include "VGUI_IntChangeSignal.h"
-#include "VGUI_Label.h"
+#include<VGUI_ListPanel.h>
+#include<VGUI_StackLayout.h>
+#include<VGUI_ScrollBar.h>
+#include<VGUI_IntChangeSignal.h>
+#include<VGUI_Label.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooDefaultListPanelSignal : public IntChangeSignal
 {
 public:
@@ -21,13 +22,14 @@ public:
 	{
 		_listPanel=listPanel;
 	}
-	void intChanged(int value,Panel* panel)
+	virtual void intChanged(int value,Panel* panel)
 	{
 		_listPanel->setPixelScroll(-value);
 	}
-private:
+protected:
 	ListPanel* _listPanel;
 };
+}
 
 ListPanel::ListPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 {
@@ -39,13 +41,12 @@ ListPanel::ListPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 
 	_scroll=new ScrollBar(wide-15,0,15,tall,true);
 	_scroll->setParent(this);
+	_scroll->addIntChangeSignal(new FooDefaultListPanelSignal(this));
 }
 
-void ListPanel::setSize(int wide,int tall)
+void ListPanel::paintBackground()
 {
-	Panel::setSize(wide,tall);
-
-	invalidateLayout(false);
+	Panel::paintBackground();
 }
 
 void ListPanel::addString(const char* str)
@@ -56,8 +57,7 @@ void ListPanel::addString(const char* str)
 void ListPanel::addItem(Panel* panel)
 {
 	panel->setParent(_vpanel);
-	invalidateLayout(true);
-
+	_vpanel->invalidateLayout(true);
 	Panel* last=_vpanel->getChild(_vpanel->getChildCount()-1);
 	int x,y,wide,tall,vwide,vtall;
 	last->getBounds(x,y,wide,tall);
@@ -66,28 +66,16 @@ void ListPanel::addItem(Panel* panel)
 	_scroll->setRange(0,y+tall-_size[1]);
 }
 
-void ListPanel::setPixelScroll(int value)
+void ListPanel::setSize(int wide,int tall)
 {
-	_vpanel->setPos(0,value);
-
-	repaint();
-	_vpanel->repaint();
-}
-
-void ListPanel::translatePixelScroll(int delta)
-{
-	int x,y;
-	_vpanel->getPos(x,y);
-	_vpanel->setPos(0,y+delta);
-
-	repaint();
-	_vpanel->repaint();
+	Panel::setSize(wide,tall);
+	invalidateLayout(false);
 }
 
 void ListPanel::performLayout()
 {
 	Panel* last=_vpanel->getChild(_vpanel->getChildCount()-1);
-	if(!last)
+	if(last==null)
 	{
 		return;
 	}
@@ -97,12 +85,23 @@ void ListPanel::performLayout()
 
 	int vwide,vtall;
 	_vpanel->getSize(vwide,vtall);
-	_vpanel->setSize(_size[0],tall);
+	_vpanel->setSize(_size[0]-15,tall);
 	_scroll->setBounds(_size[0]-15,0,15,_size[1]);
 	_scroll->setRange(0,y+tall-_size[1]);
 }
 
-void ListPanel::paintBackground()
+void ListPanel::setPixelScroll(int value)
 {
-	Panel::paintBackground();
+	_vpanel->setPos(0,value);
+	repaint();
+	_vpanel->repaint();
+}
+
+void ListPanel::translatePixelScroll(int delta)
+{
+	int x,y;
+	_vpanel->getPos(x,y);
+	_vpanel->setPos(0,y+delta);
+	repaint();
+	_vpanel->repaint();
 }

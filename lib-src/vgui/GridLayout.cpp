@@ -5,11 +5,10 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_GridLayout.h"
+#include<VGUI_GridLayout.h>
 
 using namespace vgui;
 
-/*GridLayout::GridLayout(int rows,int cols,int hgap,int vgap)
+/*GridLayout::GridLayout(int rows,int cols,int hgap,int vgap) : Layout()
 {
 }*/

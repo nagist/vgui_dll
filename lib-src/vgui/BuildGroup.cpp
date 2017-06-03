@@ -5,14 +5,12 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_BuildGroup.h"
-#include "VGUI_Cursor.h"
-#include "VGUI_Panel.h"
-#include "VGUI_ChangeSignal.h"
-#include "VGUI_App.h"
-#include "VGUI_Label.h"
-#include "VGUI_LineBorder.h"
+#include<assert.h>
+#include<VGUI_BuildGroup.h>
+#include<VGUI_ChangeSignal.h>
+#include<VGUI_App.h>
+#include<VGUI_Label.h>
+#include<VGUI_LineBorder.h>
 
 using namespace vgui;
 
@@ -39,8 +37,10 @@ void BuildGroup::setEnabled(bool state)
 			_currentPanel=null;
 			fireCurrentPanelChangeSignal();
 		}
+
 		_currentPanel=null;
 	}
+
 	_enabled=state;
 }
 
@@ -49,58 +49,14 @@ bool BuildGroup::isEnabled()
 	return _enabled;
 }
 
-void BuildGroup::addCurrentPanelChangeSignal(ChangeSignal* s)
-{
-	_currentPanelChangeSignalDar.putElement(s);
-}
-
-Panel* BuildGroup::getCurrentPanel()
-{
-	return _currentPanel;
-}
-
-void BuildGroup::copyPropertiesToClipboard()
-{
-	char text[32768];
-	text[0]=0;
-	for(int i=0;i<_panelDar.getCount();i++)
-	{
-		char buf[512];
-		_panelDar[i]->getPersistanceText(buf,sizeof(buf));
-		strcat(text,_panelNameDar[i]);
-		strcat(text,buf);
-	}
-	App::getInstance()->setClipboardText(text,strlen(text));
-	vgui_printf("Copied to clipboard\n");
-}
-
-void BuildGroup::applySnap(Panel* panel)
-{
-	int x,y,wide,tall;
-	panel->getBounds(x,y,wide,tall);
-	x = _snapX*(x/_snapX);
-	y = _snapY*(y/_snapY);
-	panel->setPos(x,y);
-	panel->setSize(_snapX*((x+wide)/_snapX)-x,_snapY*((y+tall)/_snapY)-y);
-}
-
-void BuildGroup::fireCurrentPanelChangeSignal()
-{
-	for(int i=0;i<_currentPanelChangeSignalDar.getCount();i++)
-		_currentPanelChangeSignalDar[i]->valueChanged(null);
-}
-
-void BuildGroup::panelAdded(Panel* panel,const char* panelName)
-{
-	_panelDar.addElement(panel);
-	_panelNameDar.addElement(vgui_strdup(panelName));
-}
-
 void BuildGroup::cursorMoved(int x,int y,Panel* panel)
 {
+	assert(panel);
+
 	if(_dragging)
 	{
 		panel->getApp()->getCursorPos(x,y);
+
 		if(_dragMouseCode==MOUSE_RIGHT)
 		{
 			panel->setSize(x-_dragStartCursorPos[0],y-_dragStartCursorPos[1]);
@@ -108,32 +64,36 @@ void BuildGroup::cursorMoved(int x,int y,Panel* panel)
 		}
 		else
 		{
-			panel->setSize(_dragStartPanelPos[0]+x-_dragStartCursorPos[0],_dragStartPanelPos[1]+y-_dragStartCursorPos[1]);
+			panel->setSize(_dragStartPanelPos[0]+(x-_dragStartCursorPos[0]),_dragStartPanelPos[1]+(y-_dragStartCursorPos[1]));
 			applySnap(panel);
 		}
+
 		panel->repaintParent();
 	}
 }
 
 void BuildGroup::mousePressed(MouseCode code,Panel* panel)
 {
-	int x,y;
-	panel->getApp()->getCursorPos(x,y);
-	panel->screenToLocal(x,y);
+	assert(panel);
 
 	if(code==MOUSE_RIGHT)
 	{
-		Label *label=new Label("Label",x,y,0,0);
-		label->setBorder(new LineBorder());
-		label->setParent(panel);
-		label->setBuildGroup(this, "Label");
-		panel=label;
+		int lx,ly;
+		panel->getApp()->getCursorPos(lx,ly);
+		panel->screenToLocal(lx,ly);
+
+		Panel *newPanel=new Label("Label",lx,ly,0,0);
+		newPanel->setBorder(new LineBorder());
+		newPanel->setParent(panel);
+		newPanel->setBuildGroup(this, "Label");
+		panel=newPanel;
 	}
 
 	_dragging=true;
 	_dragMouseCode=code;
 	panel->requestFocus();
 
+	int x,y;
 	panel->getApp()->getCursorPos(x,y);
 	_dragStartCursorPos[0]=x;
 	_dragStartCursorPos[1]=y;
@@ -153,16 +113,21 @@ void BuildGroup::mousePressed(MouseCode code,Panel* panel)
 
 void BuildGroup::mouseReleased(MouseCode code,Panel* panel)
 {
+	assert(panel);
+
 	_dragging=false;
 	panel->getApp()->setMouseCapture(null);
 }
 
 void BuildGroup::mouseDoublePressed(MouseCode code,Panel* panel)
 {
+	assert(panel);
 }
 
 void BuildGroup::keyTyped(KeyCode code,Panel* panel)
 {
+	assert(panel);
+
 	int dx=0;
 	int dy=0;
 
@@ -171,43 +136,67 @@ void BuildGroup::keyTyped(KeyCode code,Panel* panel)
 
 	switch(code)
 	{
-	case KEY_LEFT:
-		dx=-_snapX;
-		break;
-	case KEY_RIGHT:
-		dx=_snapX;
-		break;
-	case KEY_UP:
-		dy=-_snapY;
-		break;
-	case KEY_DOWN:
-		dy=_snapY;
-		break;
-	case KEY_C:
-		if(ctrl)
-			copyPropertiesToClipboard();
-		break;
+		case KEY_LEFT:
+		{
+			dx-=_snapX;
+			break;
+		}
+		case KEY_RIGHT:
+		{
+			dx+=_snapX;
+			break;
+		}
+		case KEY_UP:
+		{
+			dy-=_snapY;
+			break;
+		}
+		case KEY_DOWN:
+		{
+			dy+=_snapY;
+			break;
+		}
+		case KEY_C:
+		{
+			if(ctrl)
+			{
+				copyPropertiesToClipboard();
+			}
+			break;
+		}
 	}
 
 	if(dx||dy)
 	{
+		//TODO: make this stuff actually snap
+
 		int x,y,wide,tall;
+
 		panel->getBounds(x,y,wide,tall);
+
 		if(shift)
-			panel->setSize(dx+wide,dy+tall);
+		{
+			panel->setSize(wide+dx,tall+dy);
+		}
 		else
-			panel->setPos(dx+x,dy+y);
+		{
+			panel->setPos(x+dx,y+dy);
+		}
 
 		applySnap(panel);
-		panel->repaint();
 
-		if(panel->getParent())
+		panel->repaint();
+		if(panel->getParent()!=null)
+		{
 			panel->getParent()->repaint();
+		}
 	}
 }
 
 Cursor* BuildGroup::getCursor(Panel* panel)
 {
+	assert(panel);
+	
 	int x,y,wide,tall;
 	panel->getApp()->getCursorPos(x,y);
 	panel->screenToLocal(x,y);
@@ -231,4 +220,68 @@ Cursor* BuildGroup::getCursor(Panel* panel)
 	}
 
 	return _cursor_sizeall;
+}
+
+void BuildGroup::applySnap(Panel* panel)
+{
+	assert(panel);
+	
+	int x,y,wide,tall;
+	panel->getBounds(x,y,wide,tall);
+
+	x=(x/_snapX)*_snapX;
+	y=(y/_snapY)*_snapY;
+	panel->setPos(x,y);
+	
+	int xx,yy;
+	xx=x+wide;
+	yy=y+tall;
+	
+	xx=(xx/_snapX)*_snapX;
+	yy=(yy/_snapY)*_snapY;
+	panel->setSize(xx-x,yy-y);
+}
+
+void BuildGroup::addCurrentPanelChangeSignal(ChangeSignal* s)
+{
+	_currentPanelChangeSignalDar.putElement(s);
+}
+
+void BuildGroup::fireCurrentPanelChangeSignal()
+{
+	for(int i=0;i<_currentPanelChangeSignalDar.getCount();i++)
+	{
+		_currentPanelChangeSignalDar[i]->valueChanged(null);
+	}
+}
+
+Panel* BuildGroup::getCurrentPanel()
+{
+	return _currentPanel;
+}
+
+void BuildGroup::panelAdded(Panel* panel,const char* panelName)
+{
+	assert(panel);
+
+	_panelDar.addElement(panel);
+	_panelNameDar.addElement(vgui_strdup(panelName));
+}
+
+void BuildGroup::copyPropertiesToClipboard()
+{
+	char text[32768];
+	text[0]=0;
+
+	for(int i=0;i<_panelDar.getCount();i++)
+	{
+		char buf[512];
+		_panelDar[i]->getPersistanceText(buf,sizeof(buf));
+		strcat(text,_panelNameDar[i]);
+		strcat(text,buf);
+	}
+
+	App::getInstance()->setClipboardText(text,strlen(text));
+
+	vgui_printf("Copied to clipboard\n");
 }

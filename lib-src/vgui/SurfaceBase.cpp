@@ -5,12 +5,11 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <stdio.h>
-#include "VGUI.h"
-#include "VGUI_SurfaceBase.h"
-#include "VGUI_ImagePanel.h"
-#include "VGUI_App.h"
-#include "VGUI_Cursor.h"
+#include<stdio.h>
+#include<VGUI_SurfaceBase.h>
+#include<VGUI_ImagePanel.h>
+#include<VGUI_App.h>
+#include<VGUI_Cursor.h>
 
 using namespace vgui;
 
@@ -51,15 +50,22 @@ int SurfaceBase::getModeInfoCount()
 	return _modeInfoDar.getCount();
 }
 
-bool SurfaceBase::getModeInfo(int mode,int& wide,int& tall,int& bpp)
+bool SurfaceBase::getModeInfo(int index,int& wide,int& tall,int& bpp)
 {
-	if((mode<0)||(mode>=_modeInfoDar.getCount()))
+	if((index<0)||(index>=_modeInfoDar.getCount()))
 	{
 		return false;
 	}
 
-	sscanf(_modeInfoDar[mode],"%dx%dx%d",&wide,&tall,&bpp);
+	sscanf(_modeInfoDar[index],"%dx%dx%d",&wide,&tall,&bpp);
 	return true;
+}
+
+void SurfaceBase::addModeInfo(int wide,int tall,int bpp)
+{
+	char buf[256];
+	sprintf(buf,"%dx%dx%d",wide,tall,bpp);
+	_modeInfoDar.putElement(vgui_strdup(buf));
 }
 
 App* SurfaceBase::getApp()
@@ -78,20 +84,13 @@ void SurfaceBase::setEmulatedCursorPos(int x,int y)
 	getPanel()->addChild(_emulatedCursor);
 	getPanel()->screenToLocal(x,y);
 
-	if(_currentCursor&&_emulatedCursor->isVisible())
+	if((_currentCursor!=null)&&(!_emulatedCursor->isVisible()))
 	{
-		int cx,cy;
-		_currentCursor->getHotspot(cx,cy);
-		x-=cx;
-		y-=cy;
+		int hx,hy;
+		_currentCursor->getHotspot(hx,hy);
+		x-=hx;
+		y-=hy;
 	}
 
 	_emulatedCursor->setPos(x,y);
-}
-
-void SurfaceBase::addModeInfo(int wide,int tall,int bpp)
-{
-	char buf[256];
-	sprintf(buf,"%dx%dx%d",wide,tall,bpp);
-	_modeInfoDar.putElement(vgui_strdup(buf));
 }

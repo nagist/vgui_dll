@@ -5,30 +5,31 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_MessageBox.h"
-#include "VGUI_Frame.h"
-#include "VGUI_ActionSignal.h"
-#include "VGUI_Label.h"
-#include "VGUI_Button.h"
-#include "VGUI_ActionSignal.h"
+#include<VGUI_MessageBox.h>
+#include<VGUI_ActionSignal.h>
+#include<VGUI_Label.h>
+#include<VGUI_Button.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooButtonHandler : public ActionSignal
 {
+private:
+	MessageBox* _messageBox;
 public:
 	FooButtonHandler(MessageBox* messageBox)
 	{
 		_messageBox=messageBox;
 	}
-	void actionPerformed(Panel* panel)
+public:
+	virtual void actionPerformed(Panel* panel)
 	{
 		_messageBox->fireActionSignal();
 	}
-private:
-	MessageBox* _messageBox;
 };
+}
 
 MessageBox::MessageBox(const char* title,const char* text,int x,int y) : Frame(x,y,64,64)
 {
@@ -52,15 +53,6 @@ MessageBox::MessageBox(const char* title,const char* text,int x,int y) : Frame(x
 	setSize(wide+100,tall+100);
 }
 
-void MessageBox::performLayout()
-{
-	int wide,tall;
-	getClient()->getSize(wide,tall);
-
-	_messageLabel->setPos(wide/2-_messageLabel->getWide()/2,tall/2-_messageLabel->getTall()/2);
-	_okButton->setPos(wide/2-_okButton->getWide()/2,tall/2-_okButton->getTall()/2);
-}
-
 void MessageBox::addActionSignal(ActionSignal* s)
 {
 	_actionSignalDar.putElement(s);
@@ -69,5 +61,16 @@ void MessageBox::addActionSignal(ActionSignal* s)
 void MessageBox::fireActionSignal()
 {
 	for(int i=0;i<_actionSignalDar.getCount();i++)
+	{
 		_actionSignalDar[i]->actionPerformed(this);
+	}
+}
+
+void MessageBox::performLayout()
+{
+	int wide,tall;
+	getClient()->getSize(wide,tall);
+
+	_messageLabel->setPos((wide/2)-(_messageLabel->getWide()/2),(tall/2)-(_messageLabel->getTall()/2));
+	_okButton->setPos((wide/2)-(_okButton->getWide()/2),(tall/2)-(_okButton->getTall()/2));
 }

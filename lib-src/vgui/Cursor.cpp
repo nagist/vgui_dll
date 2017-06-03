@@ -5,8 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Cursor.h"
+#include<VGUI_Cursor.h>
 
 using namespace vgui;
 
@@ -14,12 +13,6 @@ Cursor::Cursor(Bitmap* bitmap,int hotspotX,int hotspotY)
 {
 	_dc=dc_user;
 	privateInit(bitmap,hotspotX,hotspotY);
-}
-
-void Cursor::getHotspot(int& x,int& y)
-{
-	x=_hotspot[0];
-	x=_hotspot[1];
 }
 
 void Cursor::privateInit(Bitmap* bitmap,int hotspotX,int hotspotY)
@@ -36,4 +29,10 @@ Bitmap* Cursor::getBitmap()
 Cursor::DefaultCursor Cursor::getDefaultCursor()
 {
 	return _dc;
+}
+
+void Cursor::getHotspot(int& x,int& y)
+{
+	x=_hotspot[0];
+	x=_hotspot[1];
 }

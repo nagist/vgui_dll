@@ -5,39 +5,44 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Font.h"
+#include<VGUI_Font.h>
 
 using namespace vgui;
-
-BaseFontPlat* Font::getPlat()
-{
-	return _plat;
-}
 
 void Font::getTextSize(const char* text,int& wide,int& tall)
 {
 	wide=0;
 	tall=0;
 
-	if(text)
+	if(text==null)
 	{
-		int x=0;
-		tall=getTall();
-		for(int i=0;text[i];i++)
-		{
-			if(text[i]=='\n')
-			{
-				x=0;
-				tall+=getTall();
-				continue;
-			}
+		return;
+	}
 
-			int a,b,c;
-			getCharABCwide(text[i],a,b,c);
-			x+=a+b+c;
-			if(x>wide)
-				wide=x;
+	tall=getTall();
+
+	int xx=0;
+	for(int i=0;;i++)
+	{
+		char ch=text[i];
+
+		if(ch==0)
+		{
+			break;
+		}
+		if(ch=='\n')
+		{
+			tall+=getTall();
+			xx=0;
+			continue;
+		}
+
+		int a,b,c;
+		getCharABCwide(ch,a,b,c);
+		xx+=a+b+c;
+		if(xx>wide)
+		{
+			wide=xx;
 		}
 	}
 }
@@ -45,4 +50,9 @@ void Font::getTextSize(const char* text,int& wide,int& tall)
 int Font::getId()
 {
 	return _id;
+}
+
+BaseFontPlat* Font::getPlat()
+{
+	return _plat;
 }

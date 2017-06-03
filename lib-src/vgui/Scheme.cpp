@@ -5,10 +5,9 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Scheme.h"
-#include "VGUI_Font.h"
-#include "VGUI_Cursor.h"
+#include<VGUI_Scheme.h>
+#include<VGUI_Font.h>
+#include<VGUI_Cursor.h>
 
 using namespace vgui;
 
@@ -68,12 +67,12 @@ Font* Scheme::getFont(SchemeFont sf)
 	return _font[sf];
 }
 
-void Scheme::setCursor(SchemeCursor sc,Cursor* cursor)
+void Scheme::setCursor(SchemeCursor scu,Cursor* cursor)
 {
-	_cursor[sc]=cursor;
+	_cursor[scu]=cursor;
 }
 
-Cursor* Scheme::getCursor(SchemeCursor sc)
+Cursor* Scheme::getCursor(SchemeCursor scu)
 {
-	return _cursor[sc];;
+	return _cursor[scu];
 }

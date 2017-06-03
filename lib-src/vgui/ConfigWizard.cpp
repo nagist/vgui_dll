@@ -5,12 +5,11 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_ConfigWizard.h"
-#include "VGUI_TreeFolder.h"
-#include "VGUI_LineBorder.h"
-#include "VGUI_LoweredBorder.h"
-#include "VGUI_Button.h"
+#include<VGUI_ConfigWizard.h>
+#include<VGUI_TreeFolder.h>
+#include<VGUI_LineBorder.h>
+#include<VGUI_LoweredBorder.h>
+#include<VGUI_Button.h>
 
 using namespace vgui;
 
@@ -39,6 +38,16 @@ ConfigWizard::ConfigWizard(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	_helpButton->setParent(this);
 }
 
+Panel* ConfigWizard::getClient()
+{
+	return _client;
+}
+
+TreeFolder* ConfigWizard::getFolder()
+{
+	return _treeFolder;
+}
+
 void ConfigWizard::setSize(int wide,int tall)
 {
 	setSize(wide,tall);
@@ -50,14 +59,4 @@ void ConfigWizard::setSize(int wide,int tall)
 	_applyButton->setPos(wide-150,tall-25);
 	_cancelButton->setPos(wide-220,tall-25);
 	_okButton->setPos(wide-290,tall-25);
-}
-
-Panel* ConfigWizard::getClient()
-{
-	return _client;
-}
-
-TreeFolder* ConfigWizard::getFolder()
-{
-	return _treeFolder;
 }

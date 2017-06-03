@@ -5,9 +5,8 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <stdio.h>
-#include "VGUI.h"
-#include "VGUI_IntLabel.h"
+#include<stdio.h>
+#include<VGUI_IntLabel.h>
 
 using namespace vgui;
 

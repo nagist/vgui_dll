@@ -5,11 +5,16 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <malloc.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdarg.h>
-#include "VGUI.h"
+#include<assert.h>
+#if defined( OSX )
+#include<malloc/malloc.h>
+#else
+#include<malloc.h>
+#endif
+#include<string.h>
+#include<stdio.h>
+#include<stdarg.h>
+#include<VGUI.h>
 
 static void*(*staticMalloc)(size_t size)=malloc;
 static void(*staticFree)(void* memblock)=free;
@@ -21,9 +26,6 @@ void *operator new(size_t size)
 
 void operator delete(void* memblock)
 {
-	if (!memblock)
-		return;
-
 	staticFree(memblock);
 }
 
@@ -37,21 +39,23 @@ void operator delete [] (void *pMem)
 	staticFree(pMem);
 }
 
-void vgui_setMalloc(void *(*theMalloc)(size_t size) )
+void vgui_setMalloc(void *(*theMalloc)(size_t size))
 {
-	if(!theMalloc)
+	if(theMalloc==null)
 	{
 		theMalloc=malloc;
 	}
+
 	staticMalloc=theMalloc;
 }
 
 void vgui_setFree(void (*theFree)(void* memblock))
 {
-	if(!theFree)
+	if(theFree==null)
 	{
 		theFree=free;
 	}
+
 	staticFree=theFree;
 }
 
@@ -59,6 +63,10 @@ namespace vgui
 {
 void vgui_strcpy(char* dst,int dstLen,const char* src)
 {
+	assert(dst!=null);
+	assert(dstLen>=0);
+	assert(src!=null);
+
 	int srcLen=strlen(src)+1;
 	if(srcLen>dstLen)
 	{
@@ -71,7 +79,13 @@ void vgui_strcpy(char* dst,int dstLen,const char* src)
 
 char* vgui_strdup(const char* src)
 {
-	return strdup(src);
+	assert(src!=null);
+
+	int len=strlen(src)+1;
+	char* dst=new char[len];
+	memcpy(dst,src,len-1);
+	dst[len-1]=0;
+	return dst;
 }
 
 int vgui_printf(const char* format,...)

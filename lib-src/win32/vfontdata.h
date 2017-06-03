@@ -12,6 +12,8 @@
 #pragma once
 #endif
 
+#include "fileimage.h"
+
 class VFontData
 {
 public:

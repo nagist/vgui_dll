@@ -5,9 +5,8 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_BitmapTGA.h"
-#include "VGUI_DataInputStream.h"
+#include<VGUI_BitmapTGA.h>
+#include<VGUI_DataInputStream.h>
 
 using namespace vgui;
 
@@ -18,8 +17,10 @@ BitmapTGA::BitmapTGA(InputStream* is,bool invertAlpha) : Bitmap()
 
 bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 {
-	if(!is)
+	if(is==null)
+	{
 		return false;
+	}
 
 	DataInputStream dis(is);
 
@@ -27,51 +28,75 @@ bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 
 	uchar id_length=dis.readUChar(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	uchar colormap_type=dis.readUChar(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	uchar image_type=dis.readUChar(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	ushort colormap_index=dis.readUShort(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	ushort colormap_length=dis.readUShort(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	uchar colormap_size=dis.readUChar(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	ushort x_origin=dis.readUShort(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	ushort y_origin=dis.readUShort(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	int wide=dis.readUShort(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	int tall=dis.readUShort(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	uchar pixel_size=dis.readUChar(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	uchar attributes=dis.readUChar(success);
 	if(!success)
+	{
 		return false;
+	}
 
 	if (image_type!=2 
 		&& image_type!=10)
@@ -87,8 +112,10 @@ bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 
 	setSize(wide,tall);
 
-	if(!_rgba)
+	if(_rgba==null)
+	{
 		return false;
+	}
 
 	if (id_length != 0)
 		dis.seekRelative(id_length,success);  // skip TARGA image comment
@@ -103,33 +130,51 @@ bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 					case 24:
 							ptr[2]=dis.readUChar(success);
 							if(!success)
+							{
 								return false;
+							}
 							ptr[1]=dis.readUChar(success);
 							if(!success)
+							{
 								return false;
+							}
 							ptr[0]=dis.readUChar(success);
 							if(!success)
+							{
 								return false;
-							ptr[3]=0;
+							}
+							ptr[3]=255;
 							if(invertAlpha)
-								ptr[3]=255;
+							{
+								ptr[3]=0;
+							}
 							ptr+=4;
 							break;
 					case 32:
 							ptr[2]=dis.readUChar(success);
 							if(!success)
+							{
 								return false;
+							}
 							ptr[1]=dis.readUChar(success);
 							if(!success)
+							{
 								return false;
+							}
 							ptr[0]=dis.readUChar(success);
 							if(!success)
+							{
 								return false;
+							}
 							ptr[3]=255-dis.readUChar(success);
 							if(!success)
+							{
 								return false;
+							}
 							if(invertAlpha)
+							{
 								ptr[3]=255-ptr[3];
+							}
 							ptr+=4;
 							break;
 				}
@@ -143,39 +188,59 @@ bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 			for(column=0; column<wide; ) {
 				packetHeader=dis.readUChar(success);
 				if(!success)
+				{
 					return false;
+				}
 				packetSize = 1 + (packetHeader & 0x7f);
 				if (packetHeader & 0x80) {        // run-length packet
 					switch (pixel_size) {
 						case 24:
 								color[2]=dis.readUChar(success);
 								if(!success)
+								{
 									return false;
+								}
 								color[1]=dis.readUChar(success);
 								if(!success)
+								{
 									return false;
+								}
 								color[0]=dis.readUChar(success);
 								if(!success)
+								{
 									return false;
-								color[3]=0;
+								}
+								color[3]=255;
 								if(invertAlpha)
-									color[3]=255;
+								{
+									color[3]=0;
+								}
 								break;
 						case 32:
 								color[2]=dis.readUChar(success);
 								if(!success)
+								{
 									return false;
+								}
 								color[1]=dis.readUChar(success);
 								if(!success)
+								{
 									return false;
+								}
 								color[0]=dis.readUChar(success);
 								if(!success)
+								{
 									return false;
+								}
 								color[3]=dis.readUChar(success);
 								if(!success)
+								{
 									return false;
+								}
 								if(invertAlpha)
+								{
 									color[3]=255-color[3];
+								}
 								break;
 					}
 	
@@ -201,33 +266,51 @@ bool BitmapTGA::loadTGA(InputStream* is,bool invertAlpha)
 							case 24:
 									ptr[2]=dis.readUChar(success);
 									if(!success)
+									{
 										return false;
+									}
 									ptr[1]=dis.readUChar(success);
 									if(!success)
+									{
 										return false;
+									}
 									ptr[0]=dis.readUChar(success);
 									if(!success)
+									{
 										return false;
+									}
 									ptr[0]=255;
 									if(invertAlpha)
+									{
 										color[3]=0;
+									}
 									ptr+=4;
 									break;
 							case 32:
 									ptr[2]=dis.readUChar(success);
 									if(!success)
+									{
 										return false;
+									}
 									ptr[1]=dis.readUChar(success);
 									if(!success)
+									{
 										return false;
+									}
 									ptr[0]=dis.readUChar(success);
 									if(!success)
+									{
 										return false;
+									}
 									ptr[3]=dis.readUChar(success);
 									if(!success)
+									{
 										return false;
+									}
 									if(invertAlpha)
+									{
 										ptr[3]=255-ptr[3];
+									}
 									ptr+=4;
 									break;
 						}

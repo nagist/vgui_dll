@@ -5,75 +5,89 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Frame.h"
-#include "VGUI_InputSignal.h"
-#include "VGUI_App.h"
-#include "VGUI_Button.h"
-#include "VGUI_FrameSignal.h"
-#include "VGUI_ActionSignal.h"
-#include "VGUI_SurfaceBase.h"
+#include<VGUI_Frame.h>
+#include<VGUI_InputSignal.h>
+#include<VGUI_App.h>
+#include<VGUI_Button.h>
+#include<VGUI_FrameSignal.h>
+#include<VGUI_ActionSignal.h>
+#include<VGUI_SurfaceBase.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooDraggerSignal : public InputSignal
 {
+protected:
+	Frame* _frame;
+
 public:
 	FooDraggerSignal(Frame* frame)
 	{
 		_frame=frame;
+		_dragging=false;
 	}
-	void cursorMoved(int x,int y,Panel* panel)
+
+public:
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
-		if(_dragging)
+	}
+
+	virtual void cursorMoved(int x,int y,Panel* panel)
+	{
+		if(!_dragging)
+			return;
+
+		panel=panel->getParent();
+		if(panel==null)
+			return;
+
+		panel->getApp()->getCursorPos(x,y);
+		Frame* frame=dynamic_cast<Frame*>(panel);
+		if(frame==null)
+			return;
+
+		if(frame->isInternal())
+		{
+			moved(x-_dragStart[0],y-_dragStart[1],true,panel,panel->getParent());
+			if(panel->getParent()!=null)
+				panel->getParent()->repaint();
+			panel->repaint();
+		}
+		else
 		{
 			Panel* parent=panel->getParent();
-			if(parent)
+			if(parent!=null)
 			{
-				parent->getApp()->getCursorPos(x,y);
-				Frame* fparent=dynamic_cast<Frame*>(parent);
-				if(fparent)
-				{
-					if(fparent->isInternal())
-					{
-						moved(x-_dragStart[0],y-_dragStart[1],true,parent,parent->getParent());
-						if(parent->getParent())
-						{
-							parent->getParent()->repaint();
-						}
-						parent->repaint();
-					}
-					else
-					{
-						parent=parent->getParent();
-						if(parent)
-						{
-							moved(x-_dragStart[0],y-_dragStart[1],false,parent,parent->getParent());
-							if(parent->getParent())
-							{
-								parent->getParent()->repaint();
-							}
-							parent->repaint();
-						}
-					}
-				}
+				moved(x-_dragStart[0],y-_dragStart[1],false,panel,parent);
+				if(parent->getParent()!=null)
+					parent->getParent()->repaint();
+				parent->repaint();
 			}
 		}
 	}
-	void cursorEntered(Panel* panel)
+
+	virtual void cursorEntered(Panel* panel)
 	{
 	}
-	void cursorExited(Panel* panel)
+
+	virtual void cursorExited(Panel* panel)
 	{
 	}
-	void mousePressed(MouseCode code,Panel* panel)
+
+	virtual void mouseDoublePressed(MouseCode code,Panel* panel)
 	{
-		Panel* p=panel->getParent();
-		if(p==null)
+	}
+
+	virtual void mousePressed(MouseCode code,Panel* panel)
+	{
+		Panel* opanel=panel->getParent();
+		if(opanel==null)
 			return;
 
-		Frame* f=dynamic_cast<Frame*>(p);
-		if(f==null)
+		Frame* frame=dynamic_cast<Frame*>(opanel);
+		if(frame==null)
 			return;
 
 		if(code==MOUSE_LEFT)
@@ -81,59 +95,45 @@ public:
 			_dragging=true;
 
 			int x,y;
-			p->getApp()->getCursorPos(x,y);
+			opanel->getApp()->getCursorPos(x,y);
 			_dragStart[0]=x;
 			_dragStart[1]=y;
-			p->getPos(_dragOrgPos[0],_dragOrgPos[1]);
-			p->getSize(_dragOrgSize[0],_dragOrgSize[1]);
-			if(p->getParent())
+			opanel->getPos(_dragOrgPos[0],_dragOrgPos[1]);
+			opanel->getSize(_dragOrgSize[0],_dragOrgSize[1]);
+			if(opanel->getParent()!=null)
 			{
-				p->getParent()->getPos(_dragOrgPos2[0],_dragOrgPos2[1]);
-				p->getParent()->getSize(_dragOrgSize2[0],_dragOrgSize2[1]);
+				opanel->getParent()->getPos(_dragOrgPos2[0],_dragOrgPos2[1]);
+				opanel->getParent()->getSize(_dragOrgSize2[0],_dragOrgSize2[1]);
 
 				int x0,y0,x1,y1;
-				p->getParent()->getAbsExtents(x0,y0,x1,y1);
-				p->getApp()->setMouseArena(x0,y0,x1,y1,true);
+				opanel->getParent()->getAbsExtents(x0,y0,x1,y1);
+				opanel->getApp()->setMouseArena(x0,y0,x1,y1,true);
 
-				Panel* p2=p->getParent();
-				p2->getParent()->removeChild(p);
-				p2->getParent()->addChild(p);
+				Panel* parent=opanel->getParent();
+				parent->removeChild(opanel);
+				parent->addChild(opanel);
 			}
 
-			p->getApp()->setMouseCapture(panel);
-			p->requestFocus();
-			p->repaintAll();
+			opanel->getApp()->setMouseCapture(panel);
+			opanel->requestFocus();
+			opanel->repaintAll();
 		}
 	}
-	void mouseDoublePressed(MouseCode code,Panel* panel)
-	{
-	}
-	void mouseReleased(MouseCode code,Panel* panel)
+
+	virtual void mouseReleased(MouseCode code,Panel* panel)
 	{
 		_dragging=false;
 		panel->getApp()->setMouseArena(0,0,0,0,false);
-		panel->getApp()->setMouseCapture(panel);
+		panel->getApp()->setMouseCapture(null);
 	}
-	void mouseWheeled(int delta,Panel* panel)
-	{
-	}
-	void keyPressed(KeyCode code,Panel* panel)
-	{
-	}
-	void keyTyped(KeyCode code,Panel* panel)
-	{
-	}
-	void keyReleased(KeyCode code,Panel* panel)
-	{
-	}
-	void keyFocusTicked(Panel* panel)
-	{
-	}
-	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
-	{
-	}
+
+	virtual void mouseWheeled(int delta,Panel* panel){}
+	virtual void keyPressed(KeyCode code,Panel* panel){}
+	virtual void keyTyped(KeyCode code,Panel* panel){}
+	virtual void keyReleased(KeyCode code,Panel* panel){}
+	virtual void keyFocusTicked(Panel* panel){}
+
 protected:
-	Frame* _frame;
 	bool _dragging;
 	int _dragOrgPos[2];
 	int _dragOrgPos2[2];
@@ -148,7 +148,8 @@ public:
 	FooTopGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -172,7 +173,8 @@ public:
 	FooBottomGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -194,7 +196,8 @@ public:
 	FooLeftGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -218,7 +221,8 @@ public:
 	FooRightGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -240,7 +244,8 @@ public:
 	FooTopLeftGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -264,7 +269,8 @@ public:
 	FooTopRightGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -288,7 +294,8 @@ public:
 	FooBottomLeftGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -312,7 +319,8 @@ public:
 	FooBottomRightGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -334,7 +342,8 @@ public:
 	FooCaptionGripSignal(Frame* frame) : FooDraggerSignal(frame)
 	{
 	}
-	void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
+
+	virtual void moved(int dx,int dy,bool internal,Panel* panel,Panel* parent)
 	{
 		if(!_frame->isSizeable())
 			return;
@@ -350,21 +359,6 @@ public:
 	}
 };
 
-class FooMinimizeButtonHandler : public ActionSignal
-{
-public:
-	FooMinimizeButtonHandler(Frame* frame)
-	{
-		_frame=frame;
-	}
-	void actionPerformed(Panel* panel)
-	{
-		_frame->fireMinimizingSignal();
-	}
-protected:
-	Frame* _frame;
-};
-
 class FooCloseButtonHandler : public ActionSignal
 {
 public:
@@ -372,7 +366,8 @@ public:
 	{
 		_frame=frame;
 	}
-	void actionPerformed(Panel* panel)
+public:
+	virtual void actionPerformed(Panel* panel)
 	{
 		_frame->fireClosingSignal();
 	}
@@ -380,7 +375,24 @@ protected:
 	Frame* _frame;
 };
 
-Frame::Frame(int x,int y,int wide,int tall)
+class FooMinimizeButtonHandler : public ActionSignal
+{
+public:
+	FooMinimizeButtonHandler(Frame* frame)
+	{
+		_frame=frame;
+	}
+public:
+	virtual void actionPerformed(Panel* panel)
+	{
+		_frame->fireMinimizingSignal();
+	}
+protected:
+	Frame* _frame;
+};
+}
+
+Frame::Frame(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 {
 	_title=null;
 	_internal=true;
@@ -388,6 +400,8 @@ Frame::Frame(int x,int y,int wide,int tall)
 	_sizeable=true;
 	_title=vgui_strdup("Untitled");
 	setMinimumSize(64,33);
+
+	bool showGrip=false;
 
 	_topGrip=new Panel(15,0,wide-30,5);
 	_topGrip->setParent(this);
@@ -489,10 +503,13 @@ Frame::Frame(int x,int y,int wide,int tall)
 
 void Frame::setSize(int wide,int tall)
 {
-	if(getWide()==wide&&getTall()==tall)
+	if((getWide()==wide)&&(getTall()==tall))
+	{
 		return;
+	}
 
 	Panel::setSize(wide,tall);
+
 	_topGrip->setBounds(15,0,_size[0]-30,5);
 	_bottomGrip->setBounds(15,_size[1]-5,_size[0]-30,5);
 	_leftGrip->setBounds(0,15,5,_size[1]-30);
@@ -513,73 +530,6 @@ void Frame::setSize(int wide,int tall)
 void Frame::setInternal(bool state)
 {
 	_internal=state;
-}
-
-void Frame::paintBackground()
-{
-	int wide=_size[0];
-	int tall=_size[1];
-
-	const int captionTall=23;
-
-	Scheme::SchemeColor color1=Scheme::sc_secondary1;
-	Scheme::SchemeColor color2=Scheme::sc_secondary2;
-	Scheme::SchemeColor color3=Scheme::sc_secondary3;
-
-	if(getSurfaceBase()->hasFocus())
-	{
-		Panel* trav=getApp()->getFocus();
-		while(trav)
-		{
-			if(trav==this)
-			{
-				color1=Scheme::sc_primary1;
-				color2=Scheme::sc_primary2;
-				color3=Scheme::sc_primary3;
-			}
-		}
-	}
-
-	drawSetColor(color3);
-	drawFilledRect(5,5,wide-5,28);
-
-	drawSetColor(Scheme::sc_white);
-	drawFilledRect(120,10,wide-70,11);
-	drawFilledRect(120,15,wide-70,16);
-	drawFilledRect(120,20,wide-70,21);
-
-	drawSetColor(color1);
-	drawFilledRect(120,12,wide-70,13);
-	drawFilledRect(120,17,wide-70,18);
-	drawFilledRect(120,22,wide-70,23);
-
-	drawSetColor(color1);
-	drawFilledRect(1,0,wide-1,5);
-	drawFilledRect(1,tall-5,wide-1,tall);
-	drawFilledRect(0,1,5,tall-1);
-	drawFilledRect(wide-5,1,wide,tall-1);
-	drawFilledRect(5,5,6,6);
-	drawFilledRect(wide-6,5,wide-5,6);
-	drawFilledRect(5,28,wide-5,29);
-
-	drawSetColor(Scheme::sc_black);
-	drawFilledRect(13,2,wide-13,3);
-	drawFilledRect(13,tall-3,wide-13,tall-2);
-	drawFilledRect(2,13,3,tall-13);
-	drawFilledRect(wide-3,13,wide-2,tall-13);
-
-	drawSetColor(color2);
-	drawFilledRect(14,3,wide-12,4);
-	drawFilledRect(14,tall-2,wide-12,tall-1);
-	drawFilledRect(3,14,4,tall-12);
-	drawFilledRect(wide-2,14,wide-1,tall-12);
-
-	if(_title)
-	{
-		drawSetTextFont(Scheme::sf_primary1);
-		drawSetTextColor(Scheme::sc_black);
-		drawPrintText(28,7,_title,strlen(_title));
-	}
 }
 
 bool Frame::isInternal()
@@ -624,17 +574,103 @@ bool Frame::isSizeable()
 	return _sizeable;
 }
 
+void Frame::paintBackground()
+{
+	int wide=_size[0];
+	int tall=_size[1];
+
+	const int captionTall=23;
+
+	Scheme::SchemeColor color1=Scheme::sc_secondary1;
+	Scheme::SchemeColor color2=Scheme::sc_secondary2;
+	Scheme::SchemeColor color3=Scheme::sc_secondary3;
+
+	if(getSurfaceBase()->hasFocus())
+	{
+		Panel* trav=getApp()->getFocus();
+		while(trav!=null)
+		{
+			if(trav==this)
+			{
+				color1=Scheme::sc_primary1;
+				color2=Scheme::sc_primary2;
+				color3=Scheme::sc_primary3;
+			}
+			trav=trav->getParent();
+		}
+	}
+
+	drawSetColor(color3);
+	drawFilledRect(5,5,wide-5,28);
+
+	drawSetColor(Scheme::sc_white);
+	drawFilledRect(120,10,wide-70,11);
+	drawFilledRect(120,15,wide-70,16);
+	drawFilledRect(120,20,wide-70,21);
+
+	drawSetColor(color1);
+	drawFilledRect(120,12,wide-70,13);
+	drawFilledRect(120,17,wide-70,18);
+	drawFilledRect(120,22,wide-70,23);
+
+	drawSetColor(color1);
+	drawFilledRect(1,0,wide-1,5);
+	drawFilledRect(1,tall-5,wide-1,tall);
+	drawFilledRect(0,1,5,tall-1);
+	drawFilledRect(wide-5,1,wide,tall-1);
+	drawFilledRect(5,5,6,6);
+	drawFilledRect(wide-6,5,wide-5,6);
+	drawFilledRect(5,28,wide-5,29);
+
+	drawSetColor(Scheme::sc_black);
+	drawFilledRect(13,2,wide-13,3);
+	drawFilledRect(13,tall-3,wide-13,tall-2);
+	drawFilledRect(2,13,3,tall-13);
+	drawFilledRect(wide-3,13,wide-2,tall-13);
+
+	drawSetColor(color2);
+	drawFilledRect(14,3,wide-12,4);
+	drawFilledRect(14,tall-2,wide-12,tall-1);
+	drawFilledRect(3,14,4,tall-12);
+	drawFilledRect(wide-2,14,wide-1,tall-12);
+
+	if(_title!=null)
+	{
+		drawSetTextFont(Scheme::sf_primary1);
+		drawSetTextColor(Scheme::sc_black);
+		drawPrintText(28,7,_title,strlen(_title));
+	}
+}
+
 void Frame::addFrameSignal(FrameSignal* s)
 {
 	_frameSignalDar.putElement(s);
+}
+
+void Frame::fireClosingSignal()
+{
+	for(int i=0;i<_frameSignalDar.getCount();i++)
+	{
+		_frameSignalDar[i]->closing(this);
+	}
+}
+
+void Frame::fireMinimizingSignal()
+{
+	for(int i=0;i<_frameSignalDar.getCount();i++)
+	{
+		_frameSignalDar[i]->minimizing(this,false);
+	}
 }
 
 void Frame::setVisible(bool state)
 {
 	Panel::setVisible(state);
 
-	if(getParent())
+	if(getParent()!=null)
+	{
 		getParent()->repaint();
+	}
 }
 
 void Frame::setMenuButtonVisible(bool state)
@@ -660,16 +696,4 @@ void Frame::setMaximizeButtonVisible(bool state)
 void Frame::setCloseButtonVisible(bool state)
 {
 	_closeButton->setVisible(state);
-}
-
-void Frame::fireClosingSignal()
-{
-	for(int i=0;i<_frameSignalDar.getCount();i++)
-		_frameSignalDar[i]->closing(this);
-}
-
-void Frame::fireMinimizingSignal()
-{
-	for(int i=0;i<_frameSignalDar.getCount();i++)
-		_frameSignalDar[i]->minimizing(this,false);
 }

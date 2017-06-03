@@ -5,23 +5,23 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <stdio.h>
-#include <time.h>
-#include "VGUI.h"
-#include "VGUI_TaskBar.h"
-#include "VGUI_FocusChangeSignal.h"
-#include "VGUI_FrameSignal.h"
-#include "VGUI_LayoutInfo.h"
-#include "VGUI_ActionSignal.h"
-#include "VGUI_TickSignal.h"
-#include "VGUI_RaisedBorder.h"
-#include "VGUI_LoweredBorder.h"
-#include "VGUI_App.h"
-#include "VGUI_Button.h"
-#include "VGUI_Frame.h"
+#include<stdio.h>
+#include<time.h>
+#include<VGUI_TaskBar.h>
+#include<VGUI_FocusChangeSignal.h>
+#include<VGUI_FrameSignal.h>
+#include<VGUI_ActionSignal.h>
+#include<VGUI_TickSignal.h>
+#include<VGUI_RaisedBorder.h>
+#include<VGUI_LoweredBorder.h>
+#include<VGUI_App.h>
+#include<VGUI_Button.h>
+#include<VGUI_Frame.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooClock : public Panel, public TickSignal
 {
 public:
@@ -32,7 +32,7 @@ public:
 		_second=0;
 		getApp()->addTickSignal(this);
 	}
-	void paintBackground()
+	virtual void paintBackground()
 	{
 		char buf[50];
 		if(_hour>12)
@@ -43,25 +43,31 @@ public:
 		{
 			sprintf(buf,"%d:%.2d:%.2d AM",_hour,_minute,_second);
 		}
+
 		Panel::paintBackground();
 		drawSetTextFont(Scheme::sf_primary1);
 		drawSetTextColor(Scheme::sc_black);
 		drawPrintText(buf,strlen(buf));
 	}
-	void ticked()
+	virtual void ticked()
 	{
+		struct tm* newtime;
 		time_t aclock;
 		time(&aclock);
-		struct tm* tm=localtime(&aclock);
-		if(_hour!=tm->tm_hour||_minute!=tm->tm_min||_second!=tm->tm_sec)
+		newtime=localtime(&aclock);
+
+		int hour=newtime->tm_hour;
+		int minute=newtime->tm_min;
+		int second=newtime->tm_sec;
+		if((_hour!=hour)||(_minute!=minute)||(_second!=second))
 		{
-			_hour=tm->tm_hour;
-			_minute=tm->tm_min;
-			_second=tm->tm_sec;
+			_hour=hour;
+			_minute=minute;
+			_second=second;
 			repaint();
 		}
 	}
-private:
+protected:
 	int _hour;
 	int _minute;
 	int _second;
@@ -75,37 +81,40 @@ public:
 		_button=button;
 		_frame=frame;
 	}
-	void actionPerformed(Panel* panel)
+public:
+	virtual void actionPerformed(Panel* panel)
 	{
 		_frame->setVisible(true);
 		_frame->requestFocus();
 	}
-	void closing(Frame* frame)
+	virtual void closing(Frame* frame)
 	{
 	}
-	void minimizing(Frame* frame,bool toTray)
+	virtual void minimizing(Frame* frame,bool toTray)
 	{
-		_button->setVisible(false);
-		_button->getApp()->requestFocus(null);
+		_frame->setVisible(false);
+		_frame->getApp()->requestFocus(null);
 	}
-	void focusChanged(bool lost,Panel* panel)
+	virtual void focusChanged(bool lost,Panel* panel)
 	{
 		_button->setSelected(!lost);
 	}
-private:
+protected:
 	Button* _button;
 	Frame* _frame;
 };
+}
 
 TaskBar::TaskBar(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 {
 	setBorder(new RaisedBorder());
+
 	_tray=new Panel(100,0,120,26);
 	_tray->setBorder(new LoweredBorder());
 	_tray->setParent(this);
 
-	Panel* panel=new FooClock(25,2,85,20);
-	panel->setParent(_tray);
+	FooClock* clock=new FooClock(25,2,85,20);
+	clock->setParent(_tray);
 }
 
 void TaskBar::addFrame(Frame* frame)
@@ -114,6 +123,7 @@ void TaskBar::addFrame(Frame* frame)
 
 	char buf[256];
 	frame->getTitle(buf,sizeof(buf));
+
 	Button* button=new Button(buf,2,2);
 	FooTaskBarButtonHandler* handler=new FooTaskBarButtonHandler(button,frame);
 	button->setParent(this);
@@ -121,6 +131,7 @@ void TaskBar::addFrame(Frame* frame)
 	frame->addFrameSignal(handler);
 	frame->addFocusChangeSignal(handler);
 	_taskButtonDar.addElement(button);
+
 	invalidateLayout(false);
 }
 
@@ -133,12 +144,14 @@ void TaskBar::performLayout()
 	_tray->getSize(twide,ttall);
 	_tray->setBounds(wide-twide-3,2,twide,tall-4);
 
-	int x=3;
+	int xx=3;
 	for(int i=0;i<_taskButtonDar.getCount();i++)
 	{
-		int tx,ty;
-		_taskButtonDar[i]->getBounds(tx,ty,wide,tall);
-		_taskButtonDar[i]->setPos(x,ty);
-		x+=wide+3;
+		Button* button=_taskButtonDar[i];
+
+		int x,y;
+		button->getBounds(x,y,wide,tall);
+		button->setPos(xx,y);
+		xx+=wide+3;
 	}
 }

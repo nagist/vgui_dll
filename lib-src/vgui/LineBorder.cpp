@@ -5,9 +5,8 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_LineBorder.h"
-#include "VGUI_Panel.h"
+#include<VGUI_LineBorder.h>
+#include<VGUI_Panel.h>
 
 using namespace vgui;
 

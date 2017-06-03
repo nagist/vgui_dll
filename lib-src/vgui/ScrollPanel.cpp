@@ -5,27 +5,30 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_ScrollPanel.h"
-#include "VGUI_ScrollBar.h"
-#include "VGUI_IntChangeSignal.h"
+#include<VGUI_ScrollPanel.h>
+#include<VGUI_ScrollBar.h>
+#include<VGUI_IntChangeSignal.h>
 
 using namespace vgui;
 
+namespace
+{
 class ChangeHandler : public IntChangeSignal
 {
+private:
+	ScrollPanel* _scrollPanel;
 public:
 	ChangeHandler(ScrollPanel* scrollPanel)
 	{
 		_scrollPanel=scrollPanel;
 	}
-	void intChanged(int value,Panel* panel)
+public:
+	virtual void intChanged(int value,Panel* panel)
 	{
 		_scrollPanel->recomputeScroll();
 	}
-private:
-	ScrollPanel* _scrollPanel;
 };
+}
 
 ScrollPanel::ScrollPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 {
@@ -41,7 +44,7 @@ ScrollPanel::ScrollPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 	_clientClip->setPaintEnabled(false);
 
 	_client=new Panel(0,0,wide*2,tall*2);
-	_client->setParent(this);
+	_client->setParent(_clientClip);
 	_client->setPaintBorderEnabled(true);
 	_client->setPaintBackgroundEnabled(false);
 	_client->setPaintEnabled(false);
@@ -58,6 +61,7 @@ ScrollPanel::ScrollPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 
 	_autoVisible[0]=true;
 	_autoVisible[1]=true;
+
 	validate();
 }
 
@@ -70,15 +74,21 @@ void ScrollPanel::setSize(int wide,int tall)
 	{
 		_horizontalScrollBar->setVisible(!_horizontalScrollBar->hasFullRange());
 	}
+
 	if(_autoVisible[1])
 	{
 		_verticalScrollBar->setVisible(!_verticalScrollBar->hasFullRange());
 	}
 
 	if(_verticalScrollBar->isVisible())
+	{
 		wide-=_verticalScrollBar->getWide();
+	}
+
 	if(_horizontalScrollBar->isVisible())
+	{
 		tall-=_horizontalScrollBar->getTall();
+	}
 
 	_verticalScrollBar->setBounds(wide,0,_verticalScrollBar->getWide(),tall);
 	_horizontalScrollBar->setBounds(0,tall,wide,_horizontalScrollBar->getTall());
@@ -91,13 +101,7 @@ void ScrollPanel::setScrollBarVisible(bool horizontal,bool vertical)
 {
 	_horizontalScrollBar->setVisible(horizontal);
 	_verticalScrollBar->setVisible(horizontal);
-	validate();
-}
 
-void ScrollPanel::setScrollBarAutoVisible(bool horizontal,bool vertical)
-{
-	_autoVisible[0]=horizontal;
-	_autoVisible[1]=vertical;
 	validate();
 }
 
@@ -124,28 +128,51 @@ void ScrollPanel::getScrollValue(int& horizontal,int& vertical)
 	vertical=_verticalScrollBar->getValue();
 }
 
+void ScrollPanel::recomputeScroll()
+{
+	int x,y;
+	getScrollValue(x,y);
+	_client->setPos(-x,-y);
+	_clientClip->repaint();
+}
+
+void ScrollPanel::setScrollBarAutoVisible(bool horizontal,bool vertical)
+{
+	_autoVisible[0]=horizontal;
+	_autoVisible[1]=vertical;
+
+	validate();
+}
+
 void ScrollPanel::recomputeClientSize()
 {
 	int wide=0;
 	int tall=0;
+
 	for(int i=0;i<_client->getChildCount();i++)
 	{
-		Panel* panel=_client->getChild(i);
-		if(panel->isVisible())
+		Panel* child=_client->getChild(i);
+		if(child->isVisible())
 		{
 			int x,y,w,t;
-			panel->getPos(x,y);
-			panel->getVirtualSize(w,t);
+			child->getPos(x,y);
+			child->getVirtualSize(w,t);
 			x+=w;
 			y+=t;
+
 			if(x>wide)
+			{
 				wide=x;
+			}
 			if(t>tall)
+			{
 				tall=t;
+			}
 		}
 	}
 
 	_client->setSize(wide,tall);
+
 	_horizontalScrollBar->setRange(0,_client->getWide()-_clientClip->getWide());
 	_horizontalScrollBar->setRangeWindow(_client->getWide());
 
@@ -174,12 +201,4 @@ void ScrollPanel::validate()
 	setSize(wide,tall);
 	setSize(wide,tall);
 	setSize(wide,tall);
-}
-
-void ScrollPanel::recomputeScroll()
-{
-	int horizontal,vertical;
-	getScrollValue(horizontal,vertical);
-	_client->setPos(-horizontal,-vertical);
-	_clientClip->repaint();
 }

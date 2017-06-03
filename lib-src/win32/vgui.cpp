@@ -5,9 +5,8 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <stdio.h>
-#include "VGUI.h"
-#include <windows.h>
+#include<stdio.h>
+#include<windows.h>
 
 namespace vgui
 {

@@ -5,13 +5,14 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_ToggleButton.h"
-#include "VGUI_ButtonController.h"
-#include "VGUI_InputSignal.h"
+#include<VGUI_ToggleButton.h>
+#include<VGUI_ButtonController.h>
+#include<VGUI_InputSignal.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooDefaultToggleButtonController : public ButtonController, public InputSignal
 {
 public:
@@ -19,53 +20,57 @@ public:
 	{
 		_button=button;
 	}
-	void addSignals(Button* button)
+public:
+	virtual void addSignals(Button* button)
 	{
 		button->addInputSignal(this);
 	}
-	void removeSignals(Button* button)
+	virtual void removeSignals(Button* button)
 	{
 		button->removeInputSignal(this);
 	}
-	void cursorMoved(int x,int y,Panel* panel)
+public:
+	virtual void cursorMoved(int x,int y,Panel* panel)
 	{
 	}
-	void cursorEntered(Panel* panel)
+	virtual void cursorEntered(Panel* panel)
 	{
 	}
-	void cursorExited(Panel* panel)
+	virtual void cursorExited(Panel* panel)
 	{
 	}
-	void mousePressed(MouseCode code,Panel* panel)
+	virtual void mousePressed(MouseCode code,Panel* panel)
 	{
 		_button->setSelected(!_button->isEnabled());
 		_button->fireActionSignal();
 		_button->repaint();
 	}
-	void mouseDoublePressed(MouseCode code,Panel* panel)
+	virtual void mouseDoublePressed(MouseCode code,Panel* panel)
 	{
 	}
-	void mouseReleased(MouseCode code,Panel* panel)
+	virtual void mouseReleased(MouseCode code,Panel* panel)
 	{
 	}
-	void mouseWheeled(int delta,Panel* panel)
+	virtual void mouseWheeled(int delta,Panel* panel)
 	{
 	}
-	void keyPressed(KeyCode code,Panel* panel)
+	virtual void keyPressed(KeyCode code,Panel* panel)
 	{
 	}
-	void keyTyped(KeyCode code,Panel* panel)
+	virtual void keyTyped(KeyCode code,Panel* panel)
 	{
 	}
-	void keyReleased(KeyCode code,Panel* panel)
+	virtual void keyReleased(KeyCode code,Panel* panel)
 	{
 	}
-	void keyFocusTicked(Panel* panel)
+	virtual void keyFocusTicked(Panel* panel)
 	{
 	}
-private:
+protected:
 	ToggleButton* _button;
 };
+
+}
 
 ToggleButton::ToggleButton(const char* text,int x,int y,int wide,int tall) : Button(text,x,y,wide,tall)
 {

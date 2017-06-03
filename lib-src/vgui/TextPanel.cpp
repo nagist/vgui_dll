@@ -5,9 +5,8 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_TextPanel.h"
-#include "VGUI_TextImage.h"
+#include<VGUI_TextPanel.h>
+#include<VGUI_TextImage.h>
 
 using namespace vgui;
 
@@ -32,6 +31,11 @@ void TextPanel::setFont(vgui::Font* font)
 	_textImage->setFont(font);
 }
 
+void TextPanel::paint()
+{
+	_textImage->doPaint(this);
+}
+
 void TextPanel::setSize(int wide,int tall)
 {
 	Panel::setSize(wide,tall);
@@ -54,9 +58,4 @@ void TextPanel::setFgColor(Scheme::SchemeColor sc)
 TextImage* TextPanel::getTextImage()
 {
 	return _textImage;
-}
-
-void TextPanel::paint()
-{
-	_textImage->doPaint(this);
 }

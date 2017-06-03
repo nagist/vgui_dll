@@ -5,12 +5,11 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_TablePanel.h"
-#include "VGUI_HeaderPanel.h"
-#include "VGUI_ChangeSignal.h"
-#include "VGUI_InputSignal.h"
-#include "VGUI_RepaintSignal.h"
+#include<VGUI_TablePanel.h>
+#include<VGUI_HeaderPanel.h>
+#include<VGUI_ChangeSignal.h>
+#include<VGUI_InputSignal.h>
+#include<VGUI_RepaintSignal.h>
 
 using namespace vgui;
 
@@ -18,71 +17,67 @@ namespace vgui
 {
 class FooVGuiTablePanelHandler : public ChangeSignal, public InputSignal, public RepaintSignal
 {
+private:
+	TablePanel* _table;
 public:
 	FooVGuiTablePanelHandler(TablePanel* table)
 	{
 		_table=table;
 	}
-	void valueChanged(Panel* panel)
+public:
+	virtual void valueChanged(Panel* panel)
 	{
-		HeaderPanel* header=null;
-		if(panel)
-			header=dynamic_cast<HeaderPanel*>(panel);
+		HeaderPanel* header=dynamic_cast<HeaderPanel*>(panel);
 
 		int cols=_table->getColumnCount();
 
-		for(int i=0;i<header->getSectionCount();i++)
+		for(int i=0;i<header->getSectionCount()&&(i<cols);i++)
 		{
-			if(i>=cols)
-				break;
-
 			int x0,x1;
 			header->getSectionExtents(i,x0,x1);
 			_table->setColumnExtents(i,x0,x1);
 		}
 	}
-	void cursorMoved(int x,int y,Panel* panel)
+	virtual void cursorMoved(int x,int y,Panel* panel)
 	{
 	}
-	void cursorEntered(Panel* panel)
+	virtual void cursorEntered(Panel* panel)
 	{
 	}
-	void cursorExited(Panel* panel)
+	virtual void cursorExited(Panel* panel)
 	{
 	}
-	void mousePressed(MouseCode code,Panel* panel)
+	virtual void mousePressed(MouseCode code,Panel* panel)
 	{
 		_table->privateMousePressed(code,panel);
 	}
-	void mouseDoublePressed(MouseCode code,Panel* panel)
+	virtual void mouseDoublePressed(MouseCode code,Panel* panel)
 	{
 		_table->privateMouseDoublePressed(code,panel);
 	}
-	void mouseReleased(MouseCode code,Panel* panel)
+	virtual void mouseReleased(MouseCode code,Panel* panel)
 	{
 	}
-	void mouseWheeled(int delta,Panel* panel)
+	virtual void mouseWheeled(int delta,Panel* panel)
 	{
 	}
-	void keyPressed(KeyCode code,Panel* panel)
+	virtual void keyPressed(KeyCode code,Panel* panel)
 	{
 	}
-	void keyTyped(KeyCode code,Panel* panel)
+	virtual void keyTyped(KeyCode code,Panel* panel)
 	{
 		_table->privateKeyTyped(code,panel);
 	}
-	void keyReleased(KeyCode code,Panel* panel)
+	virtual void keyReleased(KeyCode code,Panel* panel)
 	{
 	}
-	void keyFocusTicked(Panel* panel)
+	virtual void keyFocusTicked(Panel* panel)
 	{
 	}
-	void panelRepainted(Panel* panel)
+	virtual void panelRepainted(Panel* panel)
 	{
 		_table->repaint();
 	}
-private:
-	TablePanel* _table;
 };
 }
 
@@ -92,7 +87,6 @@ TablePanel::TablePanel(int x,int y,int wide,int tall,int columnCount) : Panel(x,
 	setGridVisible(false,false);
 	setColumnCount(columnCount);
 	setFgColor(Color(Scheme::sc_black));
-
 	_selectedCell[0]=-1;
 	_selectedCell[1]=-1;
 	_fakeInputPanel=new Panel();
@@ -107,7 +101,6 @@ TablePanel::TablePanel(int x,int y,int wide,int tall,int columnCount) : Panel(x,
 	_virtualSize[0]=wide;
 	_virtualSize[1]=tall;
 	_cellEditingEnabled=true;
-
 	addInputSignal(new FooVGuiTablePanelHandler(this));
 }
 
@@ -116,10 +109,10 @@ void TablePanel::setCellEditingEnabled(bool state)
 	_cellEditingEnabled=state;
 }
 
-void TablePanel::setColumnCount(int columnCount)
+void TablePanel::setGridSize(int wide,int tall)
 {
-	_columnDar.ensureCapacity(columnCount);
-	_columnDar.setCount(columnCount);
+	_gridWide=wide;
+	_gridTall=tall;
 }
 
 void TablePanel::setGridVisible(bool horizontal,bool vertical)
@@ -128,10 +121,10 @@ void TablePanel::setGridVisible(bool horizontal,bool vertical)
 	_gridVisible[1]=horizontal; // vertical?
 }
 
-void TablePanel::setGridSize(int gridWide,int gridTall)
+void TablePanel::setColumnCount(int columnCount)
 {
-	_gridWide=gridWide;
-	_gridTall=gridTall;
+	_columnDar.ensureCapacity(columnCount);
+	_columnDar.setCount(columnCount);
 }
 
 int TablePanel::getColumnCount()
@@ -141,13 +134,13 @@ int TablePanel::getColumnCount()
 
 void TablePanel::setColumnExtents(int column,int x0,int x1)
 {
-	_columnDar.setElementAt(x1+(x0<<12),column);
+	_columnDar.setElementAt((x0<<12)+x1,column);
 	repaint();
 }
 
 void TablePanel::setSelectedCell(int column,int row)
 {
-	if(_selectedCell[0]!=column||_selectedCell[1]!=row)
+	if((_selectedCell[0]!=column)||(_selectedCell[1]!=row))
 	{
 		repaint();
 		stopCellEditing();
@@ -160,13 +153,6 @@ void TablePanel::getSelectedCell(int& column,int& row)
 {
 	column=_selectedCell[0];
 	row=_selectedCell[1];
-}
-
-void TablePanel::setHeaderPanel(HeaderPanel* header)
-{
-	header->addChangeSignal(new FooVGuiTablePanelHandler(this));
-	header->fireChangeSignal();
-	repaint();
 }
 
 void TablePanel::setColumnSelectionEnabled(bool state)
@@ -189,12 +175,14 @@ void TablePanel::setCellSectionEnabled(bool state)
 
 void TablePanel::setEditableCell(int column,int row)
 {
-	if(_editableCell[0]!=column||_editableCell[1]!=row)
+	if((_editableCell[0]!=column)||(_editableCell[1]!=row))
 	{
 		stopCellEditing();
 		_editableCellPanel=startCellEditing(column,row);
-		if(_editableCellPanel)
+		if(_editableCellPanel!=null)
+		{
 			_editableCellPanel->setParent(this);
+		}
 	}
 	_editableCell[0]=column;
 	_editableCell[1]=row;
@@ -202,7 +190,7 @@ void TablePanel::setEditableCell(int column,int row)
 
 void TablePanel::stopCellEditing()
 {
-	if(_editableCellPanel)
+	if(_editableCellPanel!=null)
 	{
 		_editableCellPanel->setParent(null);
 		_editableCellPanel=null;
@@ -211,10 +199,87 @@ void TablePanel::stopCellEditing()
 	}
 }
 
-void TablePanel::getVirtualSize(int& wide,int& tall)
+void TablePanel::setHeaderPanel(HeaderPanel* header)
 {
-	wide=_virtualSize[0];
-	tall=_virtualSize[1];
+	header->addChangeSignal(new FooVGuiTablePanelHandler(this));
+	header->fireChangeSignal();
+	repaint();
+}
+
+void TablePanel::privateMousePressed(MouseCode code,Panel* panel)
+{
+	if(!_cellEditingEnabled)
+	{
+		return;
+	}
+
+	setSelectedCell(_mouseOverCell[0],_mouseOverCell[1]);
+	requestFocus();
+}
+
+void TablePanel::privateMouseDoublePressed(MouseCode code,Panel* panel)
+{
+	if(!_cellEditingEnabled)
+	{
+		return;
+	}
+
+	setSelectedCell(_mouseOverCell[0],_mouseOverCell[1]);
+	int column,row;
+	getSelectedCell(column,row);
+	setEditableCell(_mouseOverCell[0],_mouseOverCell[1]);
+}
+
+void TablePanel::privateKeyTyped(KeyCode code,Panel* panel)
+{
+	if(!_cellEditingEnabled)
+	{
+		return;
+	}
+
+	int column,row;
+	getSelectedCell(column,row);
+
+	switch(code)
+	{
+		case KEY_UP:
+		{
+			row--;
+			if(row<0)
+			{
+				row=0;
+			}
+			setSelectedCell(column,row);
+			break;
+		}
+		case KEY_DOWN:
+		{
+			row++;
+			setSelectedCell(column,row);
+			break;
+		}
+		case KEY_LEFT:
+		{
+			column--;
+			if(column<0)
+			{
+				column=0;
+			}
+			setSelectedCell(column,row);
+			break;
+		}
+		case KEY_RIGHT:
+		{
+			column++;
+			setSelectedCell(column,row);
+			break;
+		}
+		case KEY_ENTER:
+		{
+			setEditableCell(column,row);
+			break;
+		}
+	}
 }
 
 void TablePanel::paint()
@@ -227,7 +292,6 @@ void TablePanel::paint()
 
 	Color fgColor;
 	getFgColor(fgColor);
-
 	int r,g,b,a;
 	fgColor.getColor(r,g,b,a);
 
@@ -237,10 +301,9 @@ void TablePanel::paint()
 		for(i=0;i<_columnDar.getCount();i++)
 		{
 			maxX=(_columnDar[i]&0xFFF);
-			drawSetColor(r,g,b,a);
-
 			int x0=maxX+x0gap;
 			int x1=maxX-x1gap;
+			drawSetColor(r,g,b,a);
 			drawFilledRect(x1,0,x0,tall);
 		}
 	}
@@ -248,7 +311,6 @@ void TablePanel::paint()
 	{
 		maxX=wide;
 	}
-
 	if(_gridVisible[0])
 	{
 		int y0=0;
@@ -297,9 +359,9 @@ void TablePanel::paint()
 				cellSelected=true;
 			}
 
-			if(_editableCell[0]==i&&_editableCell[1]==j)
+			if((_editableCell[0]==i)&&(_editableCell[1]==j))
 			{
-				if(_editableCellPanel)
+				if(_editableCellPanel!=null)
 				{
 					_editableCellPanel->setBounds(x0,y0,x1-x0,getCellTall(j));
 					_editableCellPanel->repaint();
@@ -319,6 +381,7 @@ void TablePanel::paint()
 					panel->setParent(null);
 				}
 			}
+
 			y0+=_gridTall+getCellTall(j);
 			if(y0>_virtualSize[1])
 			{
@@ -355,12 +418,14 @@ Panel* TablePanel::isWithinTraverse(int x,int y)
 			_fakeInputPanel->solveTraverse();
 			panel=_fakeInputPanel->isWithinTraverse(x,y);
 			_fakeInputPanel->setParent(null);
+
 			if(panel==_fakeInputPanel)
 			{
 				_mouseOverCell[0]=i;
 				_mouseOverCell[1]=j;
 				return this;
 			}
+
 			y0+=_gridTall+getCellTall(j);
 		}
 	}
@@ -368,77 +433,8 @@ Panel* TablePanel::isWithinTraverse(int x,int y)
 	return this;
 }
 
-void TablePanel::privateMousePressed(MouseCode code,Panel* panel)
+void TablePanel::getVirtualSize(int& wide,int& tall)
 {
-	if(!_cellEditingEnabled)
-	{
-		return;
-	}
-
-	setSelectedCell(_mouseOverCell[0],_mouseOverCell[1]);
-	requestFocus();
-}
-
-void TablePanel::privateMouseDoublePressed(MouseCode code,Panel* panel)
-{
-	if(!_cellEditingEnabled)
-	{
-		return;
-	}
-
-	setSelectedCell(_mouseOverCell[0],_mouseOverCell[1]);
-
-	int column,row;
-	getSelectedCell(column,row);
-	setEditableCell(_mouseOverCell[0],_mouseOverCell[1]);
-}
-
-void TablePanel::privateKeyTyped(KeyCode code,Panel* panel)
-{
-	if(!_cellEditingEnabled)
-	{
-		return;
-	}
-
-	int column,row;
-	getSelectedCell(column,row);
-
-	switch(code)
-	{
-	case KEY_UP:
-		{
-			row--;
-			if(row<0)
-			{
-				row=0;
-			}
-			setSelectedCell(column,row);
-			break;
-		}
-	case KEY_DOWN:
-		{
-			setSelectedCell(column,row+1);
-			break;
-		}
-	case KEY_LEFT:
-		{
-			column--;
-			if(column<0)
-			{
-				column=0;
-			}
-			setSelectedCell(column,row);
-			break;
-		}
-	case KEY_RIGHT:
-		{
-			setSelectedCell(column+1,row);
-			break;
-		}
-	case KEY_ENTER:
-		{
-			setEditableCell(column,row);
-			break;
-		}
-	}
+	wide=_virtualSize[0];
+	tall=_virtualSize[1];
 }

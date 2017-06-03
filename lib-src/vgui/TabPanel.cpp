@@ -5,18 +5,82 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_TabPanel.h"
-#include "VGUI_Border.h"
-#include "VGUI_ToggleButton.h"
-#include "VGUI_ActionSignal.h"
-#include "VGUI_ButtonGroup.h"
+#include<VGUI_TabPanel.h>
+#include<VGUI_ButtonGroup.h>
+#include<VGUI_Border.h>
+#include<VGUI_ActionSignal.h>
+#include<VGUI_ToggleButton.h>
 
 using namespace vgui;
 
-class FooClientBorder : public Border
+namespace
+{
+class FooTabPanelTab : public ToggleButton, public ActionSignal
 {
 public:
+	FooTabPanelTab(TabPanel* tabPanel,const char* text,int x,int y) : ToggleButton(text,x,y)
+	{
+		_tabPanel=tabPanel;
+		addActionSignal(this);
+	}
+public:
+	virtual bool isWithin(int x,int y)
+	{
+		return Panel::isWithin(x,y);
+	}
+	virtual void actionPerformed(Panel* panel)
+	{
+		_tabPanel->setSelectedTab(this);
+	}
+protected:
+	virtual void paintBackground()
+	{
+		int wide,tall;
+		getPaintSize(wide,tall);
+
+		if(isSelected())
+		{
+			drawSetColor(Scheme::sc_secondary3);
+			drawFilledRect(0,0,wide,tall);
+
+			drawSetColor(Scheme::sc_secondary1);
+			drawFilledRect(0,0,wide,1);
+			drawFilledRect(0,1,1,tall-1);
+			drawFilledRect(wide-1,1,wide,tall-1);
+
+			drawSetColor(Scheme::sc_white);
+			drawFilledRect(1,1,wide-1,2);
+			drawFilledRect(1,2,2,tall);
+			drawFilledRect(0,tall-1,1,tall);
+			drawFilledRect(wide-1,tall-1,wide,tall);
+		}
+		else
+		{
+			drawSetColor(Scheme::sc_secondary2);
+			drawFilledRect(0,0,wide,tall);
+
+			drawSetColor(Scheme::sc_secondary1);
+			drawFilledRect(0,0,wide,1);
+			drawFilledRect(0,1,1,tall-1);
+			drawFilledRect(wide-1,1,wide,tall-1);
+
+			drawSetColor(Scheme::sc_secondary3);
+			drawFilledRect(1,1,wide-1,2);
+			drawFilledRect(1,2,2,tall);
+			drawFilledRect(0,tall-1,1,tall);
+			drawFilledRect(wide-1,tall-1,wide,tall);
+
+			drawSetColor(Scheme::sc_white);
+			drawFilledRect(0,tall-1,wide,tall);
+		}
+	}
+protected:
+	TabPanel* _tabPanel;
+};
+
+class FooClientBorder : public Border
+{
+protected:
 	virtual void paintBorder(Panel* panel)
 	{
 		int wide,tall;
@@ -34,7 +98,7 @@ public:
 
 class FooTabAreaBorder : public Border
 {
-public:
+protected:
 	virtual void paintBorder(Panel* panel)
 	{
 		int wide,tall;
@@ -44,62 +108,7 @@ public:
 		drawFilledRect(0,tall-1,wide,tall);
 	}
 };
-
-class FooTabPanelTab : public ToggleButton, public ActionSignal
-{
-public:
-	FooTabPanelTab(TabPanel* tabPanel,const char* text,int x,int y) : ToggleButton(text,x,y)
-	{
-		_tabPanel=tabPanel;
-		addActionSignal(this);
-	}
-	bool isWithin(int x,int y)
-	{
-		return Panel::isWithin(x,y);
-	}
-	void actionPerformed(Panel* panel)
-	{
-		_tabPanel->setSelectedTab(this);
-	}
-	void paintBackground()
-	{
-		int wide,tall;
-		getPaintSize(wide,tall);
-
-		if(isSelected())
-		{
-			drawSetColor(Scheme::sc_secondary3);
-			drawFilledRect(0,0,wide,tall);
-			drawSetColor(Scheme::sc_secondary1);
-			drawFilledRect(0,0,wide,1);
-			drawFilledRect(0,1,1,tall-1);
-			drawFilledRect(wide-1,1,wide,tall-1);
-			drawSetColor(Scheme::sc_white);
-			drawFilledRect(1,1,wide-1,2);
-			drawFilledRect(1,2,2,tall);
-			drawFilledRect(0,tall-1,1,tall);
-			drawFilledRect(wide-1,tall-1,wide,tall);
-		}
-		else
-		{
-			drawSetColor(Scheme::sc_secondary2);
-			drawFilledRect(0,0,wide,tall);
-			drawSetColor(Scheme::sc_secondary1);
-			drawFilledRect(0,0,wide,1);
-			drawFilledRect(0,1,1,tall-1);
-			drawFilledRect(wide-1,1,wide,tall-1);
-			drawSetColor(Scheme::sc_secondary3);
-			drawFilledRect(1,1,wide-1,2);
-			drawFilledRect(1,2,2,tall);
-			drawFilledRect(0,tall-1,1,tall);
-			drawFilledRect(wide-1,tall-1,wide,tall);
-			drawSetColor(Scheme::sc_white);
-			drawFilledRect(0,tall-1,wide,tall);
-		}
-	}
-private:
-	TabPanel* _tabPanel;
-};
+}
 
 TabPanel::TabPanel(int x,int y,int wide,int tall) : Panel(x,y,wide,tall)
 {
@@ -128,7 +137,7 @@ Panel* TabPanel::addTab(const char* text)
 	_clientArea->insertChildAt(panel,0);
 	panel->setVisible(false);
 
-	if(!_selectedTab)
+	if(_selectedTab==null)
 	{
 		_selectedTab=tab;
 		_selectedPanel=panel;
@@ -142,27 +151,27 @@ Panel* TabPanel::addTab(const char* text)
 
 void TabPanel::setSelectedTab(Panel* tab)
 {
-	if(tab!=null&&tab!=_selectedTab)
+	if(tab==null)
 	{
-		for(int i=0;i<_tabArea->getChildCount();i++)
-		{
-			if(_tabArea->getChild(i)==tab)
-			{
-				_selectedPanel->setVisible(false);
-				_selectedPanel=_clientArea->getChild(i);
-				_selectedPanel->setVisible(true);
-				_selectedTab=tab;
-				break;
-			}
-		}
-
-		recomputeLayout();
+		return;
 	}
-}
 
-void TabPanel::setSize(int wide,int tall)
-{
-	Panel::setSize(wide,tall);
+	if(tab==_selectedTab)
+	{
+		return;
+	}
+
+	for(int i=0;i<_tabArea->getChildCount();i++)
+	{
+		if(_tabArea->getChild(i)==tab)
+		{
+			_selectedPanel->setVisible(false);
+			_selectedPanel=_clientArea->getChild(i);
+			_selectedPanel->setVisible(true);
+			_selectedTab=tab;
+			break;
+		}
+	}
 
 	recomputeLayout();
 }
@@ -187,7 +196,7 @@ void TabPanel::recomputeLayoutTop()
 		_tabArea->getChild(i)->setSize(wide,tall);
 		if(x+wide>maxx)
 		{
-			if(inRowCount)
+			if(inRowCount!=0)
 			{
 				int extra=(maxx-x)/inRowCount;
 				int error=maxx-(inRowCount*extra)-x;
@@ -242,8 +251,16 @@ void TabPanel::recomputeLayout()
 	if(_tabArea->getChildCount()!=0)
 	{
 		if(_tabPlacement==0)
+		{
 			recomputeLayoutTop();
+		}
 		repaint();
 	}
 }
 
+void TabPanel::setSize(int wide,int tall)
+{
+	Panel::setSize(wide,tall);
+
+	recomputeLayout();
+}

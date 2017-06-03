@@ -5,11 +5,12 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_CheckButton.h"
+#include<VGUI_CheckButton.h>
 
 using namespace vgui;
 
+namespace
+{
 class FooCheckImage : public Image
 {
 public:
@@ -18,7 +19,8 @@ public:
 		_checkButton=checkButton;
 		setSize(20,20);
 	}
-	void paint()
+public:
+	virtual void paint()
 	{
 		drawSetTextFont(Scheme::sf_secondary1);
 		drawSetTextColor(Scheme::sc_white);
@@ -38,28 +40,33 @@ public:
 			drawPrintChar(0,0,'a');
 		}
 	}
-private:
+protected:
 	CheckButton* _checkButton;
 };
+
+}
 
 CheckButton::CheckButton(const char* text,int x,int y,int wide,int tall) : ToggleButton(text,x,y,wide,tall)
 {
 	setTextAlignment(Label::a_east);
 	setImage(new FooCheckImage(this));
-	getContentSize(wide,tall);
-	setSize(wide,tall);
 }
 
 CheckButton::CheckButton(const char* text,int x,int y) : ToggleButton(text,x,y)
 {
 	setTextAlignment(Label::a_east);
 	setImage(new FooCheckImage(this));
+
+	int wide,tall;
+	getContentSize(wide,tall);
+	setSize(wide,tall);
 }
 
 void CheckButton::paintBackground()
 {
 	int wide,tall;
 	getPaintSize(wide,tall);
+
 	drawSetColor(Scheme::sc_secondary3);
 	drawFilledRect(0,0,wide,tall);
 }

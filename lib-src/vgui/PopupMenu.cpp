@@ -5,9 +5,8 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_PopupMenu.h"
-#include "VGUI_SurfaceBase.h"
+#include<VGUI_PopupMenu.h>
+#include<VGUI_SurfaceBase.h>
 
 using namespace vgui;
 

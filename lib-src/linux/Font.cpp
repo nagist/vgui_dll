@@ -5,260 +5,188 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Font.h"
-#include "VGUI_Dar.h"
-#include "fileimage.h"
-#include "vfontdata.h"
-#include "utlrbtree.h"
-#include "vgui_linux.h"
+#include<VGUI_Font.h>
+#include<VGUI_Dar.h>
+#include"vgui_linux.h"
 
 using namespace vgui;
 
 static int staticFontId=100;
 static Dar<BaseFontPlat*> staticFontPlatDar;
 
-namespace vgui
+FontPlat::FontPlat(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol) : m_ExtendedABCWidthsCache(256, 0, &ExtendedABCWidthsCacheLessFunc)
 {
-class FontPlat : public BaseFontPlat
+	m_bBitmapFont = false;
+
+	strncpy( m_szName, name, sizeof( m_szName ));
+	m_iTall = tall;
+	m_iWeight = weight;
+	m_iFlags = 0;
+	m_bAntiAliased = false;
+	m_bUnderlined = underline;
+	m_iDropShadowOffset = 0;
+	m_iOutlineSize = 0;
+	m_iBlur = 0;
+	m_iScanLines = 0;
+	m_bRotary = false;
+	m_bAdditive = false;
+
+	// TODO
+}
+
+FontPlat::~FontPlat()
 {
-protected:
-	struct font_name_entry
-	{
-		char *m_OSSpecificName;
-		uint8 m_cbOSSpecificName;
-		char *m_pchFriendlyName;
-	};
+}
 
-	bool ms_bSetFriendlyNameCacheLessFunc;
-	CUtlRBTree<font_name_entry, int> m_FriendlyNameCache;
-
-	static bool FontLessFunc( const font_name_entry &lhs, const font_name_entry &rhs )
-	{
-		return strcasecmp( rhs.m_pchFriendlyName, lhs.m_pchFriendlyName ) > 0;
-	}
-
-	virtual int getWide()
-	{
-		return m_iMaxCharWidth;
-	}
-
-	int bufSize[2];
-	uchar* buf;
-
-	VFontData m_BitmapFont;
-	bool m_bBitmapFont;
-
-	char m_szName[32];
-	int m_iTall;
-	int m_iWeight;
-	int m_iFlags;
-	bool m_bAntiAliased;
-	bool m_bRotary;
-	bool m_bAdditive;
-	int m_iDropShadowOffset;
-	bool m_bUnderlined;
-	int m_iOutlineSize;
-	int m_iHeight;
-	int m_iMaxCharWidth;
-	int m_iAscent;
-
-	// abc widths
-	struct abc_t
-	{
-		short b;
-		char a;
-		char c;
-	};
-
-	// On PC we cache char widths on demand when actually requested to minimize our use of the kernels 
-	// paged pool (GDI may cache information about glyphs we have requested and take up lots of paged pool)
-	struct abc_cache_t
-	{
-		wchar_t wch;
-		abc_t abc;
-	};
-	CUtlRBTree<abc_cache_t, unsigned short> m_ExtendedABCWidthsCache;
-	static bool ExtendedABCWidthsCacheLessFunc(const abc_cache_t &lhs, const abc_cache_t &rhs);
-
-	int m_iScanLines;
-	int m_iBlur;
-	float *m_pGaussianDistribution;
-
-public:
-	FontPlat(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol) : m_ExtendedABCWidthsCache(256, 0, &ExtendedABCWidthsCacheLessFunc)
-	{
-		m_bBitmapFont = false;
-
-		strncpy( m_szName, name, sizeof( m_szName ));
-		m_iTall = tall;
-		m_iWeight = weight;
-		m_iFlags = 0;
-		m_bAntiAliased = false;
-		m_bUnderlined = underline;
-		m_iDropShadowOffset = 0;
-		m_iOutlineSize = 0;
-		m_iBlur = 0;
-		m_iScanLines = 0;
-		m_bRotary = false;
-		m_bAdditive = false;
-	}
-
-	virtual ~FontPlat()
-	{
-	}
-
-	bool ExtendedABCWidthsCacheLessFunc(const abc_cache_t &lhs, const abc_cache_t &rhs)
-	{
-		return lhs.wch < rhs.wch;
-	}
-
-	virtual bool equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
-	{
-		if (!stricmp(name, m_szName) 
-			&& m_iTall == tall
-			&& m_iWeight == weight
-			&& m_bUnderline == underline)
-			return true;
-
-		return false;
-	}
-
-	void CreateFontList()
-	{
-	}
-
-	virtual void getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
-	{
-	}
-
-	virtual void getCharABCwide(int ch,int& a,int& b,int& c)
-	{
-		// look for it in the cache
-		abc_cache_t finder = { (wchar_t)ch };
-
-		unsigned short i = m_ExtendedABCWidthsCache.Find(finder);
-		if (m_ExtendedABCWidthsCache.IsValidIndex(i))
-		{
-			a = m_ExtendedABCWidthsCache[i].abc.a;
-			b = m_ExtendedABCWidthsCache[i].abc.b;
-			c = m_ExtendedABCWidthsCache[i].abc.c;
-			return;
-		}
-	}
-
-	virtual int getTall()
-	{
-		return m_iHeight;
-	}
-	virtual void drawSetTextFont(SurfacePlat* plat)
-	{
-	}
-};
-
-class FontPlat_Bitmap : public BaseFontPlat
+bool FontPlat::ExtendedABCWidthsCacheLessFunc(const abc_cache_t &lhs, const abc_cache_t &rhs)
 {
-protected:
-	virtual int getWide()
+	return lhs.wch < rhs.wch;
+}
+
+bool FontPlat::equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
+{
+	if (!stricmp(name, m_szName) 
+		&& m_iTall == tall
+		&& m_iWeight == weight
+		&& m_bUnderlined == underline)
+		return true;
+
+	return false;
+}
+
+void FontPlat::getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
+{
+	// TODO
+}
+
+void FontPlat::getCharABCwide(int ch,int& a,int& b,int& c)
+{
+	// look for it in the cache
+	abc_cache_t finder = { (wchar_t)ch };
+
+	unsigned short i = m_ExtendedABCWidthsCache.Find(finder);
+	if (m_ExtendedABCWidthsCache.IsValidIndex(i))
 	{
-		return m_FontData.m_BitmapCharWidth;
+		a = m_ExtendedABCWidthsCache[i].abc.a;
+		b = m_ExtendedABCWidthsCache[i].abc.b;
+		c = m_ExtendedABCWidthsCache[i].abc.c;
+		return;
 	}
 
-	VFontData m_FontData;
-	char *m_pName;
+	// TODO
+}
 
-public:
-	FontPlat_Bitmap()
+int FontPlat::getTall()
+{
+	return m_iHeight;
+}
+
+int FontPlat::getWide()
+{
+	return m_iMaxCharWidth;
+}
+
+void FontPlat::drawSetTextFont(SurfacePlat* plat)
+{
+}
+
+FontPlat_Bitmap::FontPlat_Bitmap()
+{
+	m_pName=null;
+}
+
+FontPlat_Bitmap::~FontPlat_Bitmap()
+{
+}
+
+FontPlat_Bitmap* FontPlat_Bitmap::Create(const char* name, FileImageStream* pStream)
+{
+	FontPlat_Bitmap* pBitmap=new FontPlat_Bitmap();
+	if(pBitmap==null)
 	{
-		m_pName=null;
+		return null;
 	}
 
-	virtual ~FontPlat_Bitmap()
+	if(!LoadVFontDataFrom32BitTGA(pStream,&pBitmap->m_FontData))
 	{
+		delete pBitmap;
+		return null;
 	}
 
-	static FontPlat_Bitmap* Create(const char* name, FileImageStream* pStream)
+	pBitmap->m_pName=new char[strlen(name)+1];
+	if(pBitmap->m_pName==null)
 	{
-		FontPlat_Bitmap* pBitmap=new FontPlat_Bitmap();
-		if(!pBitmap)
-			return null;
+		delete pBitmap;
+		return null;
+	}
 
-		if(!LoadVFontDataFrom32BitTGA(pStream,&pBitmap->m_FontData))
+	strcpy(pBitmap->m_pName,name);
+	return pBitmap;
+}
+
+bool FontPlat_Bitmap::equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
+{
+	return false;
+}
+
+void FontPlat_Bitmap::getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
+{
+	uchar* pSrcPos;
+	uchar* pOutPos;
+	int x,y,outX,outY;
+
+	if(ch<0)
+		ch=0;
+	else if(ch>=256)
+		ch=256;
+
+	for(y=0;y<m_FontData.m_BitmapCharHeight;y++)
+	{
+		pSrcPos=&m_FontData.m_pBitmap[m_FontData.m_BitmapCharWidth*(ch+y*256)];
+		for(x=0;x<m_FontData.m_BitmapCharWidth;x++)
 		{
-			delete pBitmap;
-			return null;
-		}
-
-		pBitmap->m_pName=new char[strlen(name)+1];
-		if(!pBitmap->m_pName)
-		{
-			delete pBitmap;
-			return null;
-		}
-
-		strcpy(pBitmap->m_pName,name);
-		return pBitmap;
-	}
-
-	virtual bool equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
-	{
-		return false;
-	}
-
-	virtual void getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
-	{
-		uchar* pSrcPos;
-		uchar* pOutPos;
-		int x,y,outX,outY;
-
-		if(ch<0)
-			ch=0;
-		else if(ch>=256)
-			ch=256;
-
-		for(y=0;y<m_FontData.m_BitmapCharHeight;y++)
-		{
-			pSrcPos=&m_FontData.m_pBitmap[m_FontData.m_BitmapCharWidth*(ch+y*256)];
-			for(x=0;x<m_FontData.m_BitmapCharWidth;x++)
+			outX=rgbaX+x;
+			outY=rgbaY+y;
+			if ((outX<rgbaWide)&&(outY<rgbaTall))
 			{
-				outX=rgbaX+x;
-				outY=rgbaY+y;
-				if ((outX<rgbaWide)&&(outY<rgbaTall))
+				pOutPos=&rgba[(outY*rgbaWide+outX)*4];
+				if(pSrcPos[x]!=0)
 				{
-					pOutPos=&rgba[(outY*rgbaWide+outX)*4];
-					if(pSrcPos[x])
-					{
-						pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=255;
-					}
-					else
-					{
-						pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=0;
-					}
+					pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=255;
+				}
+				else
+				{
+					pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=0;
 				}
 			}
 		}
 	}
+}
 
-	virtual void getCharABCwide(int ch,int& a,int& b,int& c)
-	{
-		if(ch<0)
-			ch=0;
-		else if(ch>255)
-			ch=255;
+void FontPlat_Bitmap::getCharABCwide(int ch,int& a,int& b,int& c)
+{
+	if(ch<0)
+		ch=0;
+	else if(ch>255)
+		ch=255;
 
-		a=c=0;
-		b=m_FontData.m_CharWidths[ch]+1;
-	}
+	a=c=0;
+	b=m_FontData.m_CharWidths[ch]+1;
+}
 
-	virtual int getTall()
-	{
-		return m_FontData.m_BitmapCharHeight;
-	}
-	virtual void drawSetTextFont(SurfacePlat* plat)
-	{
-	}
-};
-};
+int FontPlat_Bitmap::getTall()
+{
+	return m_FontData.m_BitmapCharHeight;
+}
+
+int FontPlat_Bitmap::getWide()
+{
+	return m_FontData.m_BitmapCharWidth;
+}
+
+void FontPlat_Bitmap::drawSetTextFont(SurfacePlat* plat)
+{
+}
 
 Font::Font(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 {
@@ -272,16 +200,16 @@ Font::Font(const char* name,void *pFileData,int fileDataLen, int tall,int wide,f
 
 void Font::init(const char* name,void *pFileData,int fileDataLen, int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 {
-	FontPlat_Bitmap*pBitmapFont;
+	FontPlat_Bitmap*pBitmapFont=null;
 
 	_name=strdup(name);
 	_id=-1;
 
-	if(pFileData)
+	if(pFileData!=null)
 	{
 		FileImageStream_Memory memStream(pFileData,fileDataLen);
 		pBitmapFont=FontPlat_Bitmap::Create(name,&memStream);
-		if(pBitmapFont)
+		if(pBitmapFont!=null)
 		{
 			_plat=pBitmapFont;
 			staticFontPlatDar.addElement(_plat);
@@ -321,6 +249,11 @@ void Font::getCharABCwide(int ch,int& a,int& b,int& c)
 int Font::getTall()
 {
 	return _plat->getTall();
+}
+
+int Font::getWide()
+{
+	return _plat->getWide();
 }
 
 namespace vgui

@@ -5,91 +5,64 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_TreeFolder.h"
-#include "VGUI_InputSignal.h"
-#include "VGUI_Label.h"
-#include "VGUI_Layout.h"
+#include<VGUI_TreeFolder.h>
+#include<VGUI_InputSignal.h>
+#include<VGUI_Label.h>
+#include<VGUI_Layout.h>
 
 using namespace vgui;
 
-class FooTreeFolderDefaultHandler : public InputSignal
+namespace
 {
-public:
-	FooTreeFolderDefaultHandler(TreeFolder* treeFolder)
-	{
-		_treeFolder=treeFolder;
-	}
-	void cursorMoved(int x,int y,Panel* panel)
-	{
-	}
-	void cursorEntered(Panel* panel)
-	{
-	}
-	void cursorExited(Panel* panel)
-	{
-	}
-	void mousePressed(MouseCode code,Panel* panel)
-	{
-		_treeFolder->setOpened(!_treeFolder->isOpened());
-	}
-	void mouseDoublePressed(MouseCode code,Panel* panel)
-	{
-	}
-	void mouseReleased(MouseCode code,Panel* panel)
-	{
-	}
-	void mouseWheeled(int delta,Panel* panel)
-	{
-	}
-	void keyPressed(KeyCode code,Panel* panel)
-	{
-	}
-	void keyTyped(KeyCode code,Panel* panel)
-	{
-	}
-	void keyReleased(KeyCode code,Panel* panel)
-	{
-	}
-	void keyFocusTicked(Panel* panel)
-	{
-	}
-private:
-	TreeFolder* _treeFolder;
-};
-
 class FooTabFolderVerticalLayout : public Layout
 {
 public:
-	FooTabFolderVerticalLayout()
+	FooTabFolderVerticalLayout() : Layout()
 	{
 		_hgap=30;
 		_vgap=3;
 	}
-	void performLayout(Panel* panel)
+public:
+	virtual void performLayout(Panel* panel)
 	{
 		TreeFolder* folder;
+
 		int maxx=0;
 		int wide,tall,xx,yy=0;
+
 		for(int i=0;i<panel->getChildCount();i++)
 		{
 			Panel* child=panel->getChild(i);
+
 			folder=dynamic_cast<TreeFolder*>(child);
-			if(folder)
+			if(folder!=null)
+			{
 				folder->invalidateLayout(true);
+			}
 
 			child->getSize(wide,tall);
-			xx=(i==0)?0:_hgap;
+
+			if(i==0)
+			{
+				xx=0;
+			}
+			else
+			{
+				xx=_hgap;
+			}
+
 			child->setPos(xx,yy);
 
 			if(xx+wide>maxx)
+			{
 				maxx=xx+wide;
+			}
 
 			yy+=tall+_vgap;
 		}
 
 		folder=dynamic_cast<TreeFolder*>(panel);
-		if(folder)
+		if(folder!=null)
 		{
 			if(folder->isOpened())
 			{
@@ -98,28 +71,64 @@ public:
 			else
 			{
 				Panel*child=panel->getChild(0);
-				if(child)
+				if(child!=null)
 				{
-					int wide,tall;
 					child->getSize(wide,tall);
 					folder->setSize(wide,tall);
 				}
 			}
 		}
 	}
-private:
+protected:
 	int _hgap;
 	int _vgap;
 };
 
-TreeFolder::TreeFolder(const char* name) : Panel(0,0,500,500)
+class FooTreeFolderDefaultHandler : public InputSignal
 {
-	init(name);
-}
-
-TreeFolder::TreeFolder(const char* name,int x,int y) : Panel(x,y,500,500)
-{
-	init(name);
+public:
+	FooTreeFolderDefaultHandler(TreeFolder* treeFolder)
+	{
+		_treeFolder=treeFolder;
+	}
+public:
+	virtual void cursorMoved(int x,int y,Panel* panel)
+	{
+	}
+	virtual void cursorEntered(Panel* panel)
+	{
+	}
+	virtual void cursorExited(Panel* panel)
+	{
+	}
+	virtual void mousePressed(MouseCode code,Panel* panel)
+	{
+		_treeFolder->setOpened(!_treeFolder->isOpened());
+	}
+	virtual void mouseDoublePressed(MouseCode code,Panel* panel)
+	{
+	}
+	virtual void mouseReleased(MouseCode code,Panel* panel)
+	{
+	}
+	virtual void mouseWheeled(int delta,Panel* panel)
+	{
+	}
+	virtual void keyPressed(KeyCode code,Panel* panel)
+	{
+	}
+	virtual void keyTyped(KeyCode code,Panel* panel)
+	{
+	}
+	virtual void keyReleased(KeyCode code,Panel* panel)
+	{
+	}
+	virtual void keyFocusTicked(Panel* panel)
+	{
+	}
+protected:
+	TreeFolder* _treeFolder;
+};
 }
 
 void TreeFolder::init(const char* name)
@@ -133,17 +142,14 @@ void TreeFolder::init(const char* name)
 	setLayout(new FooTabFolderVerticalLayout());
 }
 
-void TreeFolder::setOpenedTraverse(bool state)
+TreeFolder::TreeFolder(const char* name) : Panel(0,0,500,500)
 {
-	setOpened(true);
+	init(name);
+}
 
-	for(int i=0;i<getChildCount();i++)
-	{
-		Panel* p=getChild(i);
-		TreeFolder* folder=dynamic_cast<TreeFolder*>(p);
-		if(folder)
-			folder->setOpenedTraverse(state);
-	}
+TreeFolder::TreeFolder(const char* name,int x,int y) : Panel(x,y,500,500)
+{
+	init(name);
 }
 
 void TreeFolder::setOpened(bool state)
@@ -152,20 +158,22 @@ void TreeFolder::setOpened(bool state)
 	{
 		_opened=state;
 
-		TreeFolder* folder=null;
-		Panel* p=this;
-		while(p)
+		TreeFolder* top=null;
+		Panel* trav=this;
+		while(trav!=null)
 		{
-			TreeFolder* panel=dynamic_cast<TreeFolder*>(p);
-			if(panel)
+			TreeFolder* folder=dynamic_cast<TreeFolder*>(trav);
+			if(folder!=null)
 			{
-				panel->invalidateLayout(true);
-				folder=panel;
+				folder->invalidateLayout(true);
+				top=folder;
 			}
-			p=p->getParent();
+			trav=trav->getParent();
 		}
-		if(folder)
-			folder->repaintParent();
+		if(top!=null)
+		{
+			top->repaintParent();
+		}
 	}
 }
 
@@ -189,7 +197,7 @@ void TreeFolder::paintBackground()
 		Panel* child=getChild(i);
 		int x,y,wide,tall;
 		child->getBounds(x,y,wide,tall);
-		if(dynamic_cast<TreeFolder*>(child))
+		if(dynamic_cast<TreeFolder*>(child)!=null)
 		{
 			y+=10;
 		}
@@ -197,9 +205,11 @@ void TreeFolder::paintBackground()
 		{
 			y+=tall/2;
 		}
+
 		drawFilledRect(x0,y,x1,y+1);
 		y1=y;
 	}
+
 	drawFilledRect(x0,y0,x0+1,y1);
 
 	for(i=1;i<getChildCount();i++)
@@ -208,7 +218,7 @@ void TreeFolder::paintBackground()
 		int x,y,wide,tall;
 		child->getBounds(x,y,wide,tall);
 		TreeFolder* folder=dynamic_cast<TreeFolder*>(child);
-		if(folder)
+		if(folder!=null)
 		{
 			y+=10;
 			drawSetColor(Scheme::sc_white);
@@ -216,8 +226,25 @@ void TreeFolder::paintBackground()
 			drawSetColor(Scheme::sc_black);
 			drawOutlinedRect(x0-5,y-5,x0+6,y+6);
 			drawFilledRect(x0-3,y,x0+4,y+1);
-			if(folder->isOpened())
+
+			if(!folder->isOpened())
+			{
 				drawFilledRect(x0,y-3,x0+1,y+4);
+			}
+		}
+	}
+}
+
+void TreeFolder::setOpenedTraverse(bool state)
+{
+	setOpened(true);
+
+	for(int i=0;i<getChildCount();i++)
+	{
+		TreeFolder* folder=dynamic_cast<TreeFolder*>(getChild(i));
+		if(folder!=null)
+		{
+			folder->setOpenedTraverse(state);
 		}
 	}
 }

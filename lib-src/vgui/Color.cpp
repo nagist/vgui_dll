@@ -5,11 +5,19 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Color.h"
-#include "VGUI_App.h"
+#include<VGUI_Color.h>
+#include<VGUI_App.h>
 
 using namespace vgui;
+
+void Color::init()
+{
+	_color[0]=0;
+	_color[1]=0;
+	_color[2]=0;
+	_color[3]=0;
+	_schemeColor=Scheme::sc_user;
+}
 
 Color::Color()
 {
@@ -26,15 +34,6 @@ Color::Color(Scheme::SchemeColor sc)
 {
 	init();
 	setColor(sc);
-}
-
-void Color::init()
-{
-	_color[0]=0;
-	_color[1]=0;
-	_color[2]=0;
-	_color[3]=0;
-	_schemeColor=Scheme::sc_user;
 }
 
 void Color::setColor(int r,int g,int b,int a)
@@ -73,7 +72,7 @@ void Color::getColor(Scheme::SchemeColor& sc)
 
 int Color::operator[](int index)
 {
-	int color[4];
-	getColor(color[0],color[1],color[2],color[3]);
-	return color[index];
+	int co[4];
+	getColor(co[0],co[1],co[2],co[3]);
+	return co[index];
 }

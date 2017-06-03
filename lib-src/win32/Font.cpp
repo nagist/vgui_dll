@@ -5,312 +5,273 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Font.h"
-#include "VGUI_Dar.h"
-#include "fileimage.h"
-#include "vfontdata.h"
-#include <windows.h>
-#include "vgui_win32.h"
+#include<VGUI_Font.h>
+#include<VGUI_Dar.h>
+#include"vgui_win32.h"
 
 using namespace vgui;
 
 static int staticFontId=100;
 static Dar<BaseFontPlat*> staticFontPlatDar;
 
-namespace vgui
+FontPlat::FontPlat(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 {
-class FontPlat : public BaseFontPlat
-{
-protected:
-	HFONT m_hFont;
-	HDC m_hDC;
-	HBITMAP m_hDIB;
-	TEXTMETRIC tm;
-	enum { ABCWIDTHS_CACHE_SIZE = 256 };
-	ABC m_ABCWidthsCache[ABCWIDTHS_CACHE_SIZE];
+	m_szName = strdup(name);
+	m_iTall = tall;
+	m_iWide = wide;
+	m_flRotation = rotation;
+	m_iWeight = weight;
+	m_bItalic = italic;
+	m_bUnderline = underline;
+	m_bStrikeOut = strikeout;
+	m_bSymbol = symbol;
 
-	int bufSize[2];
-	uchar* buf;
+	int charset = symbol ? SYMBOL_CHARSET : ANSI_CHARSET;
+	m_hFont = ::CreateFontA(tall, wide, (int)(rotation*10), (int)(rotation*10), 
+									weight, 
+									italic, 
+									underline, 
+									strikeout, 
+									charset, 
+									OUT_DEFAULT_PRECIS, 
+									CLIP_DEFAULT_PRECIS, 
+									DEFAULT_QUALITY, 
+									DEFAULT_PITCH, 
+									m_szName);
 
-	VFontData m_BitmapFont;
-	bool m_bBitmapFont;
+	m_hDC = ::CreateCompatibleDC(NULL);
 
-	char *m_szName;
-	int m_iWide;
-	int m_iTall;
-	float m_flRotation;
-	int m_iWeight;
-	bool m_bItalic;
-	bool m_bUnderline;
-	bool m_bStrikeOut;
-	bool m_bSymbol;
+	// set as the active font
+	::SelectObject(m_hDC, m_hFont);
+	::SetTextAlign(m_hDC, TA_LEFT | TA_TOP | TA_UPDATECP);
 
-public:
-	FontPlat(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
+	// get info about the font
+	GetTextMetrics(m_hDC, &tm);
+
+	// code for rendering to a bitmap
+	bufSize[0] = tm.tmMaxCharWidth;
+	bufSize[1] = tm.tmHeight + tm.tmAscent + tm.tmDescent;
+
+	::BITMAPINFOHEADER header;
+	memset(&header, 0, sizeof(header));
+	header.biSize = sizeof(header);
+	header.biWidth = bufSize[0];
+	header.biHeight = -bufSize[1];
+	header.biPlanes = 1;
+	header.biBitCount = 32;
+	header.biCompression = BI_RGB;
+
+	m_hDIB = ::CreateDIBSection(m_hDC, (BITMAPINFO*)&header, DIB_RGB_COLORS, (void**)(&buf), NULL, 0);
+	::SelectObject(m_hDC, m_hDIB);
+
+	// get char spacing
+	// a is space before character (can be negative)
+	// b is the width of the character
+	// c is the space after the character
+	memset(m_ABCWidthsCache, 0, sizeof(m_ABCWidthsCache));
+	if (!::GetCharABCWidthsA(m_hDC, 0, ABCWIDTHS_CACHE_SIZE - 1, m_ABCWidthsCache))
 	{
-		m_szName = strdup(name);
-		m_iTall = tall;
-		m_iWide = wide;
-		m_flRotation = rotation;
-		m_iWeight = weight;
-		m_bItalic = italic;
-		m_bUnderline = underline;
-		m_bStrikeOut = strikeout;
-		m_bSymbol = symbol;
-
-		int charset = symbol ? SYMBOL_CHARSET : ANSI_CHARSET;
-		m_hFont = ::CreateFontA(tall, wide, rotation*10, rotation*10, 
-										weight, 
-										italic, 
-										underline, 
-										strikeout, 
-										charset, 
-										OUT_DEFAULT_PRECIS, 
-										CLIP_DEFAULT_PRECIS, 
-										DEFAULT_QUALITY, 
-										DEFAULT_PITCH, 
-										m_szName);
-
-		m_hDC = ::CreateCompatibleDC(NULL);
-
-		// set as the active font
-		::SelectObject(m_hDC, m_hFont);
-		::SetTextAlign(m_hDC, TA_LEFT | TA_TOP | TA_UPDATECP);
-
-		// get info about the font
-		GetTextMetrics(m_hDC, &tm);
-
-		// code for rendering to a bitmap
-		bufSize[0] = tm.tmMaxCharWidth;
-		bufSize[1] = tm.tmHeight + tm.tmAscent + tm.tmDescent;
-
-		::BITMAPINFOHEADER header;
-		memset(&header, 0, sizeof(header));
-		header.biSize = sizeof(header);
-		header.biWidth = bufSize[0];
-		header.biHeight = -bufSize[1];
-		header.biPlanes = 1;
-		header.biBitCount = 32;
-		header.biCompression = BI_RGB;
-
-		m_hDIB = ::CreateDIBSection(m_hDC, (BITMAPINFO*)&header, DIB_RGB_COLORS, (void**)(&buf), NULL, 0);
-		::SelectObject(m_hDC, m_hDIB);
-
-		// get char spacing
-		// a is space before character (can be negative)
-		// b is the width of the character
-		// c is the space after the character
-		memset(m_ABCWidthsCache, 0, sizeof(m_ABCWidthsCache));
-		if (!::GetCharABCWidthsA(m_hDC, 0, ABCWIDTHS_CACHE_SIZE - 1, m_ABCWidthsCache))
+		// since that failed, it must be fixed width, zero everything so a and c will be zeros, then
+		// fill b with the value from TEXTMETRIC
+		for (int i = 0; i < ABCWIDTHS_CACHE_SIZE; i++)
 		{
-			// since that failed, it must be fixed width, zero everything so a and c will be zeros, then
-			// fill b with the value from TEXTMETRIC
-			for (int i = 0; i < ABCWIDTHS_CACHE_SIZE; i++)
+			m_ABCWidthsCache[i].abcB = (char)tm.tmAveCharWidth;
+		}
+	}
+}
+
+FontPlat::~FontPlat()
+{
+}
+
+bool FontPlat::equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
+{
+	if (!stricmp(name, m_szName) 
+		&& m_iTall == tall
+		&& m_iWide == wide
+		&& m_flRotation == rotation
+		&& m_iWeight == weight
+		&& m_bItalic == italic
+		&& m_bUnderline == underline
+		&& m_bStrikeOut == strikeout
+		&& m_bSymbol == symbol)
+		return true;
+
+	return false;
+}
+
+void FontPlat::getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
+{
+	// set us up to render into our dib
+	::SelectObject(m_hDC, m_hFont);
+
+	// use render-to-bitmap to get our font texture
+	::SetBkColor(m_hDC, RGB(0, 0, 0));
+	::SetTextColor(m_hDC, RGB(255, 255, 255));
+	::SetBkMode(m_hDC, OPAQUE);
+	::MoveToEx(m_hDC, -m_ABCWidthsCache[ch].abcA, 0, NULL);
+
+	// render the character
+	char wch = (char)ch;
+	::ExtTextOutA(m_hDC, 0, 0, 0, NULL, &wch, 1, NULL);
+	::SetBkMode(m_hDC, TRANSPARENT);
+
+	int wide = m_ABCWidthsCache[ch].abcB;
+	if (wide > bufSize[0])
+	{
+		wide = bufSize[0];
+	}
+	int tall = tm.tmHeight;
+	if (tall > bufSize[1])
+	{
+		tall = bufSize[1];
+	}
+
+	// iterate through copying the generated dib into the texture
+	for (int j = 0; j < tall; j++)
+	{
+		for (int i = 0; i < wide; i++)
+		{
+			int x = rgbaX + i;
+			int y = rgbaY + j;
+			if ((x < rgbaWide) && (y < rgbaTall))
 			{
-				m_ABCWidthsCache[i].abcB = (char)tm.tmAveCharWidth;
+				unsigned char *src = &buf[(j*bufSize[0]+i)*4];
+
+				float r = (src[0]) / 255.0f;
+				float g = (src[1]) / 255.0f;
+				float b = (src[2]) / 255.0f;
+
+				// Don't want anything drawn for tab characters.
+				if (ch == '\t')
+				{
+					r = g = b = 0;
+				}
+
+				unsigned char *dst = &rgba[(y*rgbaWide+x)*4];
+				dst[0] = (unsigned char)(r * 255.0f);
+				dst[1] = (unsigned char)(g * 255.0f);
+				dst[2] = (unsigned char)(b * 255.0f);
+				dst[3] = (unsigned char)((r * 0.34f + g * 0.55f + b * 0.11f) * 255.0f);
 			}
 		}
 	}
+}
 
-	virtual ~FontPlat()
+void FontPlat::getCharABCwide(int ch,int& a,int& b,int& c)
+{
+	a = m_ABCWidthsCache[ch].abcA;
+	b = m_ABCWidthsCache[ch].abcB;
+	c = m_ABCWidthsCache[ch].abcC;
+
+	if (a < 0)
 	{
+		a = 0;
+	}
+}
+
+int FontPlat::getTall()
+{
+	return tm.tmHeight;
+}
+
+void FontPlat::drawSetTextFont(SurfacePlat* plat)
+{
+	::SelectObject(plat->hdc, m_hFont);
+}
+
+FontPlat_Bitmap::FontPlat_Bitmap()
+{
+	m_pName=null;
+}
+
+FontPlat_Bitmap::~FontPlat_Bitmap()
+{
+}
+
+FontPlat_Bitmap* FontPlat_Bitmap::Create(const char* name, FileImageStream* pStream)
+{
+	FontPlat_Bitmap* pBitmap=new FontPlat_Bitmap();
+	if(pBitmap==null)
+	{
+		return null;
 	}
 
-	virtual bool equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
+	if(!LoadVFontDataFrom32BitTGA(pStream,&pBitmap->m_FontData))
 	{
-		if (!stricmp(name, m_szName) 
-			&& m_iTall == tall
-			&& m_iWide == wide
-			&& m_flRotation == rotation
-			&& m_iWeight == weight
-			&& m_bItalic == italic
-			&& m_bUnderline == underline
-			&& m_bStrikeOut == strikeout
-			&& m_bSymbol == symbol)
-			return true;
-
-		return false;
+		delete pBitmap;
+		return null;
 	}
 
-	virtual void getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
+	pBitmap->m_pName=new char[strlen(name)+1];
+	if(pBitmap->m_pName==null)
 	{
-		// set us up to render into our dib
-		::SelectObject(m_hDC, m_hFont);
+		delete pBitmap;
+		return null;
+	}
 
-		// use render-to-bitmap to get our font texture
-		::SetBkColor(m_hDC, RGB(0, 0, 0));
-		::SetTextColor(m_hDC, RGB(255, 255, 255));
-		::SetBkMode(m_hDC, OPAQUE);
-		::MoveToEx(m_hDC, -m_ABCWidthsCache[ch].abcA, 0, NULL);
+	strcpy(pBitmap->m_pName,name);
+	return pBitmap;
+}
 
-		// render the character
-		char wch = (char)ch;
-		::ExtTextOutA(m_hDC, 0, 0, 0, NULL, &wch, 1, NULL);
-		::SetBkMode(m_hDC, TRANSPARENT);
+bool FontPlat_Bitmap::equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
+{
+	return false;
+}
 
-		int wide = m_ABCWidthsCache[ch].abcB;
-		if (wide > bufSize[0])
+void FontPlat_Bitmap::getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
+{
+	uchar* pSrcPos;
+	uchar* pOutPos;
+	int x,y,outX,outY;
+
+	if(ch<0)
+		ch=0;
+	else if(ch>=256)
+		ch=256;
+
+	for(y=0;y<m_FontData.m_BitmapCharHeight;y++)
+	{
+		pSrcPos=&m_FontData.m_pBitmap[m_FontData.m_BitmapCharWidth*(ch+y*256)];
+		for(x=0;x<m_FontData.m_BitmapCharWidth;x++)
 		{
-			wide = bufSize[0];
-		}
-		int tall = tm.tmHeight;
-		if (tall > bufSize[1])
-		{
-			tall = bufSize[1];
-		}
-
-		// iterate through copying the generated dib into the texture
-		for (int j = 0; j < tall; j++)
-		{
-			for (int i = 0; i < wide; i++)
+			outX=rgbaX+x;
+			outY=rgbaY+y;
+			if ((outX<rgbaWide)&&(outY<rgbaTall))
 			{
-				int x = rgbaX + i;
-				int y = rgbaY + j;
-				if ((x < rgbaWide) && (y < rgbaTall))
+				pOutPos=&rgba[(outY*rgbaWide+outX)*4];
+				if(pSrcPos[x]!=0)
 				{
-					unsigned char *src = &buf[(j*bufSize[0]+i)*4];
-
-					float r = (src[0]) / 255.0f;
-					float g = (src[1]) / 255.0f;
-					float b = (src[2]) / 255.0f;
-
-					// Don't want anything drawn for tab characters.
-					if (ch == '\t')
-					{
-						r = g = b = 0;
-					}
-
-					unsigned char *dst = &rgba[(y*rgbaWide+x)*4];
-					dst[0] = (unsigned char)(r * 255.0f);
-					dst[1] = (unsigned char)(g * 255.0f);
-					dst[2] = (unsigned char)(b * 255.0f);
-					dst[3] = (unsigned char)((r * 0.34f + g * 0.55f + b * 0.11f) * 255.0f);
+					pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=255;
+				}
+				else
+				{
+					pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=0;
 				}
 			}
 		}
 	}
+}
 
-	virtual void getCharABCwide(int ch,int& a,int& b,int& c)
-	{
-		a = m_ABCWidthsCache[ch].abcA;
-		b = m_ABCWidthsCache[ch].abcB;
-		c = m_ABCWidthsCache[ch].abcC;
-
-		if (a < 0)
-		{
-			a = 0;
-		}
-	}
-
-	virtual int getTall()
-	{
-		return tm.tmHeight;
-	}
-	virtual void drawSetTextFont(SurfacePlat* plat)
-	{
-		::SelectObject(plat->hdc, m_hFont);
-	}
-};
-
-class FontPlat_Bitmap : public BaseFontPlat
+void FontPlat_Bitmap::getCharABCwide(int ch,int& a,int& b,int& c)
 {
-protected:
-	VFontData m_FontData;
-	char *m_pName;
+	if(ch<0)
+		ch=0;
+	else if(ch>255)
+		ch=255;
 
-public:
-	FontPlat_Bitmap()
-	{
-		m_pName=null;
-	}
+	a=c=0;
+	b=m_FontData.m_CharWidths[ch]+1;
+}
 
-	virtual ~FontPlat_Bitmap()
-	{
-	}
+int FontPlat_Bitmap::getTall()
+{
+	return m_FontData.m_BitmapCharHeight;
+}
 
-	static FontPlat_Bitmap* Create(const char* name, FileImageStream* pStream)
-	{
-		FontPlat_Bitmap* pBitmap=new FontPlat_Bitmap();
-		if(!pBitmap)
-			return null;
-
-		if(!LoadVFontDataFrom32BitTGA(pStream,&pBitmap->m_FontData))
-		{
-			delete pBitmap;
-			return null;
-		}
-
-		pBitmap->m_pName=new char[strlen(name)+1];
-		if(!pBitmap->m_pName)
-		{
-			delete pBitmap;
-			return null;
-		}
-
-		strcpy(pBitmap->m_pName,name);
-		return pBitmap;
-	}
-
-	virtual bool equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
-	{
-		return false;
-	}
-
-	virtual void getCharRGBA(int ch,int rgbaX,int rgbaY,int rgbaWide,int rgbaTall,uchar* rgba)
-	{
-		uchar* pSrcPos;
-		uchar* pOutPos;
-		int x,y,outX,outY;
-
-		if(ch<0)
-			ch=0;
-		else if(ch>=256)
-			ch=256;
-
-		for(y=0;y<m_FontData.m_BitmapCharHeight;y++)
-		{
-			pSrcPos=&m_FontData.m_pBitmap[m_FontData.m_BitmapCharWidth*(ch+y*256)];
-			for(x=0;x<m_FontData.m_BitmapCharWidth;x++)
-			{
-				outX=rgbaX+x;
-				outY=rgbaY+y;
-				if ((outX<rgbaWide)&&(outY<rgbaTall))
-				{
-					pOutPos=&rgba[(outY*rgbaWide+outX)*4];
-					if(pSrcPos[x])
-					{
-						pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=255;
-					}
-					else
-					{
-						pOutPos[0]=pOutPos[1]=pOutPos[2]=pOutPos[3]=0;
-					}
-				}
-			}
-		}
-	}
-
-	virtual void getCharABCwide(int ch,int& a,int& b,int& c)
-	{
-		if(ch<0)
-			ch=0;
-		else if(ch>255)
-			ch=255;
-
-		a=c=0;
-		b=m_FontData.m_CharWidths[ch]+1;
-	}
-
-	virtual int getTall()
-	{
-		return m_FontData.m_BitmapCharHeight;
-	}
-	virtual void drawSetTextFont(SurfacePlat* plat)
-	{
-	}
-};
-};
+void FontPlat_Bitmap::drawSetTextFont(SurfacePlat* plat)
+{
+}
 
 Font::Font(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 {
@@ -324,16 +285,16 @@ Font::Font(const char* name,void *pFileData,int fileDataLen, int tall,int wide,f
 
 void Font::init(const char* name,void *pFileData,int fileDataLen, int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 {
-	FontPlat_Bitmap*pBitmapFont;
+	FontPlat_Bitmap*pBitmapFont=null;
 
 	_name=strdup(name);
 	_id=-1;
 
-	if(pFileData)
+	if(pFileData!=null)
 	{
 		FileImageStream_Memory memStream(pFileData,fileDataLen);
 		pBitmapFont=FontPlat_Bitmap::Create(name,&memStream);
-		if(pBitmapFont)
+		if(pBitmapFont!=null)
 		{
 			_plat=pBitmapFont;
 			staticFontPlatDar.addElement(_plat);

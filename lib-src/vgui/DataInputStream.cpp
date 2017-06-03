@@ -5,8 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_DataInputStream.h"
+#include<VGUI_DataInputStream.h>
 
 using namespace vgui;
 
@@ -17,7 +16,7 @@ DataInputStream::DataInputStream(InputStream* is)
 
 void DataInputStream::seekStart(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return;
@@ -28,7 +27,7 @@ void DataInputStream::seekStart(bool& success)
 
 void DataInputStream::seekRelative(int count,bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return;
@@ -39,18 +38,18 @@ void DataInputStream::seekRelative(int count,bool& success)
 
 void DataInputStream::seekEnd(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return;
 	}
 
-	return _is->seekEnd(success);
+	_is->seekEnd(success);
 }
 
 int DataInputStream::getAvailable(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -61,7 +60,7 @@ int DataInputStream::getAvailable(bool& success)
 
 void DataInputStream::readUChar(uchar* buf,int count,bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return;
@@ -72,7 +71,7 @@ void DataInputStream::readUChar(uchar* buf,int count,bool& success)
 
 void DataInputStream::close(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return;
@@ -89,7 +88,7 @@ void DataInputStream::close()
 
 bool DataInputStream::readBool(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return false;
@@ -100,7 +99,7 @@ bool DataInputStream::readBool(bool& success)
 
 char DataInputStream::readChar(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -111,7 +110,7 @@ char DataInputStream::readChar(bool& success)
 
 uchar DataInputStream::readUChar(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -122,7 +121,7 @@ uchar DataInputStream::readUChar(bool& success)
 
 short DataInputStream::readShort(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -135,7 +134,7 @@ short DataInputStream::readShort(bool& success)
 
 ushort DataInputStream::readUShort(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -148,7 +147,7 @@ ushort DataInputStream::readUShort(bool& success)
 
 int DataInputStream::readInt(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -161,7 +160,7 @@ int DataInputStream::readInt(bool& success)
 
 uint DataInputStream::readUInt(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -174,7 +173,7 @@ uint DataInputStream::readUInt(bool& success)
 
 long DataInputStream::readLong(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -187,7 +186,7 @@ long DataInputStream::readLong(bool& success)
 
 ulong DataInputStream::readULong(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -200,7 +199,7 @@ ulong DataInputStream::readULong(bool& success)
 
 float DataInputStream::readFloat(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -213,7 +212,7 @@ float DataInputStream::readFloat(bool& success)
 
 double DataInputStream::readDouble(bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return 0;
@@ -226,7 +225,7 @@ double DataInputStream::readDouble(bool& success)
 
 void DataInputStream::readLine(char* buf,int bufLen,bool& success)
 {
-	if(!_is)
+	if(_is==null)
 	{
 		success=false;
 		return;

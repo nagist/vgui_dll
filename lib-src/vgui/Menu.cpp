@@ -5,10 +5,9 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_Menu.h"
-#include "VGUI_RaisedBorder.h"
-#include "VGUI_StackLayout.h"
+#include<VGUI_Menu.h>
+#include<VGUI_RaisedBorder.h>
+#include<VGUI_StackLayout.h>
 
 using namespace vgui;
 

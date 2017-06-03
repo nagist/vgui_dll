@@ -5,8 +5,8 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_ProgressBar.h"
+#include<math.h>
+#include<VGUI_ProgressBar.h>
 
 using namespace vgui;
 
@@ -20,21 +20,35 @@ void ProgressBar::paintBackground()
 {
 	int wide,tall;
 	getPaintSize(wide,tall);
+
 	drawSetColor(Scheme::sc_secondary2);
 	drawFilledRect(0,0,wide,tall);
 
+	const int segmentGap=2;
+	int segmentWide=wide/_segmentCount-segmentGap;
+
+	const float rr=0;
+	const float gg=0;
+	const float bb=100;
+
 	int x=0;
-	int segmentWide=wide/_segmentCount-2;
-	for(int i=(int)_progress;i>=0;i--)
+
+	int litSeg=(int)floor(_progress);
+	for(int i=litSeg;i>0;i--)
 	{
-		drawSetColor(0,0,100,0);
+		drawSetColor((int)rr,(int)gg,(int)bb,0);
 		drawFilledRect(x,0,x+segmentWide,tall);
-		x+=segmentWide+2;
+		x+=segmentWide+segmentGap;
 	}
 	
 	if(_segmentCount>_progress)
 	{
-		drawSetColor(0,0,255-(_progress-(int)_progress)*155,0);
+		float frac=_progress-(float)floor(_progress);
+		float r=0;
+		float g=255-(frac*155);
+		float b=0;
+
+		drawSetColor((int)r,(int)g,(int)b,0);
 		drawFilledRect(x,0,x+segmentWide,tall);
 	}
 }

@@ -5,22 +5,18 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include <stdio.h>
-#include "VGUI.h"
-#include "VGUI_Surface.h"
-#include "VGUI_Cursor.h"
-#include "VGUI_KeyCode.h"
-#include "VGUI_Panel.h"
-#include "VGUI_App.h"
-#include "VGUI_ImagePanel.h"
-#include "VGUI_Bitmap.h"
-#include "VGUI_Font.h"
-
-#define WIN32_LEAN_AND_MEAN
-#define OEMRESOURCE
-#include <windows.h>
-#include <zmouse.h>
-#include "vgui_win32.h"
+#include<assert.h>
+#include<stdio.h>
+#include<VGUI_Surface.h>
+#include<VGUI_Cursor.h>
+#include<VGUI_KeyCode.h>
+#include<VGUI_Panel.h>
+#include<VGUI_App.h>
+#include<VGUI_ImagePanel.h>
+#include<VGUI_Bitmap.h>
+#include<VGUI_Font.h>
+#include"vgui_win32.h"
+#include<zmouse.h>
 
 using namespace vgui;
 
@@ -199,8 +195,8 @@ bool Surface::createPlat()
 
 	//create the window and initialize platform specific data
 	//window is initial a popup and not visible
-	//when ApplyChanges is called the window will be shown unless
-	//it SetVisible(false) is called
+	//when applyChanges is called the window will be shown unless
+	//it setVisible(false) is called
 	SurfacePlat *plat = new SurfacePlat();
 	plat->hwnd = CreateWindowEx(0, "Surface", "", WS_POPUP, x, y, wide, tall, NULL, NULL, GetModuleHandle(NULL), NULL);
 	plat->clipRgn = CreateRectRgn(0,0,64,64);
@@ -314,16 +310,16 @@ static LRESULT CALLBACK staticProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lpara
 		}
 		case WM_ERASEBKGND:
 		{
-			//since the vgui Invalidate call does not erase the background
-			//this will only be called when windows itselfs wants a Repaint.
+			//since the vgui invalidate call does not erase the background
+			//this will only be called when windows itselfs wants a repaint.
 			//this is the desired behavior because this call will for the
 			//surface and all its children to end up being repainted, which
-			//is what you want when windows wants you to Repaint the surface,
+			//is what you want when windows wants you to repaint the surface,
 			//but not what you want when say a control wants to be painted
-			//VPanel::Repaint will always Invalidate the surface so it will
+			//Panel::repaint will always invalidate the surface so it will
 			//get a WM_PAINT, but that does not necessarily mean you want
 			//the whole surface painted
-			//simply this means.. this call only happens when windows wants the Repaint
+			//simply this means.. this call only happens when windows wants the repaint
 			//and WM_PAINT gets called just after this to do the real painting
 
 			surface->getPanel()->repaint();
@@ -340,7 +336,7 @@ static LRESULT CALLBACK staticProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lpara
 			surface->getPanel()->paintTraverse();
 			::EndPaint(hwnd,&ps);
 
-			//clear the update rectangle so it does not get another Repaint
+			//clear the update rectangle so it does not get another repaint
 			::ValidateRect(hwnd, NULL);	
 
 			break;
@@ -393,7 +389,7 @@ void Surface::applyChanges()
 	swide = rect.right-rect.left;
 	stall = rect.bottom-rect.top;
 
-	// how big is the embedded VPanel
+	// how big is the embedded Panel
 	getPanel()->getBounds(x, y, wide, tall);
 
 	// if they are not the same, then adjust the win32 window so it is
@@ -405,7 +401,7 @@ void Surface::applyChanges()
 	// check to see if the win32 window is visible
 	if (::GetWindowLong(_plat->hwnd, GWL_STYLE) & WS_VISIBLE)
 	{
-		//check to see if embedded VPanel is not visible, if so then hide the win32 window
+		//check to see if embedded Panel is not visible, if so then hide the win32 window
 		if (getPanel()->isVisible())
 		{
 			::ShowWindow(_plat->hwnd, SW_HIDE);
@@ -413,7 +409,7 @@ void Surface::applyChanges()
 	}
 	else // win32 window is hidden
 	{
-		//check to see if embedded VPanel is visible, if so then show the win32 window
+		//check to see if embedded Panel is visible, if so then show the win32 window
 		if (getPanel()->isVisible())
 		{
 			::ShowWindow(_plat->hwnd, SW_SHOWNA);
@@ -467,6 +463,7 @@ void Surface::drawSetTextColor(int r,int g,int b,int a)
 
 void Surface::drawPrintText(const char* text,int textLen)
 {
+	assert(text);
 	if (!text)
 		return;
 
@@ -557,7 +554,7 @@ void Surface::pushMakeCurrent(Panel* panel,bool useInsets)
 {
 	int inset[4];
 
-	//!! need to make the inset part of VPanel
+	//!! need to make the inset part of Panel
 	panel->getInset(inset[0],inset[1],inset[2],inset[3]);
 
 	if(!useInsets)
@@ -618,6 +615,8 @@ void Surface::enableMouseCapture(bool state)
 
 void Surface::setCursor(Cursor* cursor)
 {
+	_currentCursor = cursor;
+
 	if (cursor != null)
 	{
 		_emulatedCursor->setImage(cursor->getBitmap());
@@ -663,6 +662,7 @@ void Surface::invalidate(Panel *panel)
 
 void Surface::drawSetTextFont(Font* font)
 {
+	assert(font);
 	if (!font)
 	{
 		return;

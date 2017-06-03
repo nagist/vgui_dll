@@ -5,8 +5,7 @@
 // $NoKeywords: $
 //=============================================================================
 
-#include "VGUI.h"
-#include "VGUI_FileInputStream.h"
+#include<VGUI_FileInputStream.h>
 
 using namespace vgui;
 
@@ -17,40 +16,40 @@ FileInputStream::FileInputStream(const char* fileName,bool textMode)
 
 void FileInputStream::seekStart(bool& success)
 {
-	if(!_fp)
+	if(_fp==null)
 	{
 		success=false;
 		return;
 	}
 
-	success=fseek(_fp,0,SEEK_SET)!=0;
+	success=(fseek(_fp,0,SEEK_SET)!=0);
 }
 
 void FileInputStream::seekRelative(int count,bool& success)
 {
-	if(!_fp)
+	if(_fp==null)
 	{
 		success=false;
 		return;
 	}
 
-	success=fseek(_fp,SEEK_CUR,count)!=0;
+	success=(fseek(_fp,SEEK_CUR,count)!=0);
 }
 
 void FileInputStream::seekEnd(bool& success)
 {
-	if(!_fp)
+	if(_fp==null)
 	{
 		success=false;
 		return;
 	}
 
-	success=fseek(_fp,SEEK_END,0)!=0;
+	success=(fseek(_fp,SEEK_END,0)!=0);
 }
 
 int FileInputStream::getAvailable(bool& success)
 {
-	if(!_fp)
+	if(_fp==null)
 	{
 		success=false;
 		return 0;
@@ -62,7 +61,7 @@ int FileInputStream::getAvailable(bool& success)
 
 uchar FileInputStream::readUChar(bool& success)
 {
-	if(!_fp)
+	if(_fp==null)
 	{
 		success=false;
 		return 0;
@@ -75,7 +74,7 @@ uchar FileInputStream::readUChar(bool& success)
 
 void FileInputStream::readUChar(uchar* buf,int count,bool& success)
 {
-	if(!_fp)
+	if(_fp==null)
 	{
 		success=false;
 		return;
@@ -86,7 +85,7 @@ void FileInputStream::readUChar(uchar* buf,int count,bool& success)
 
 void FileInputStream::close(bool& success)
 {
-	if(!_fp)
+	if(_fp==null)
 	{
 		success=false;
 		return;

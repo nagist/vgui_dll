@@ -529,7 +529,6 @@ void App::internalTick()
 	_keyFocus=_wantedKeyFocus;
 	_buildMode=_wantedBuildMode;
 
-	printf("App::internalTick(%d)\n",_surfaceBaseDar.getCount());
 	for(i=0;i<_surfaceBaseDar.getCount();i++)
 	{
 		_surfaceBaseDar[i]->getPanel()->solveTraverse();

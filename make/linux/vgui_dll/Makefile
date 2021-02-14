@@ -19,11 +19,15 @@ BINDIR=./bin
 
 BASE_CFLAGS=-DNDEBUG -D_LINUX -DLINUX -Dstricmp=strcasecmp -D_vsnprintf=vsnprintf
 
-CFLAGS=$(BASE_CFLAGS) -w -m32 -O1
+CFLAGS=$(BASE_CFLAGS) -w -O1
+
+ifneq ($(64BIT), 1)
+    CFLAGS += -m32
+endif
 
 INCLUDEDIRS=-I. -I$(VGUIINCDIR) -I$(PUBLICDIR)
 
-LDFLAGS=
+LDFLAGS=-Wl,--no-undefined
 
 SHLIBEXT=so
 SHLIBCFLAGS=-fPIC
@@ -106,10 +110,11 @@ OBJ = \
 	$(OBJDIR)/linux/fileimage.o \
 	$(OBJDIR)/linux/Font.o \
 	$(OBJDIR)/linux/Surface.o \
+	$(OBJDIR)/linux/vfontdata.o \
 	$(OBJDIR)/linux/vgui.o
 
 $(BINDIR)/$(DLLNAME).$(SHLIBEXT) : neat $(OBJ)
-	$(CC) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)
+	$(CXX) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)
 
 neat:
 	-mkdir -p $(OBJDIR)

@@ -676,7 +676,7 @@ void App::setMouseArena(Panel* panel)
 
 void App::setMouseArena(int x0,int y0,int x1,int y1,bool enabled)
 {
-	setMouseArena(false);
+	setMouseArena(0);
 	internalSetMouseArena(x0,y0,x1,y1,enabled);
 }
 

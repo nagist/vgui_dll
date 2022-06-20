@@ -37,7 +37,7 @@
 #include<VGUI_ImagePanel.h>
 #include<VGUI_Bitmap.h>
 #include<VGUI_Font.h>
-#include"vgui_win32.h"
+#include"Font.h"
 #include<zmouse.h>
 
 using namespace vgui;

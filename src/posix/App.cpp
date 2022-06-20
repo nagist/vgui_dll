@@ -29,7 +29,7 @@
 
 #include<VGUI_App.h>
 #include<VGUI_SurfaceBase.h>
-#include"vgui_linux.h"
+#include"Font.h"
 #include<sys/time.h>
 
 using namespace vgui;

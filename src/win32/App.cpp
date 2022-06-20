@@ -29,7 +29,7 @@
 
 #include<VGUI_App.h>
 #include<VGUI_SurfaceBase.h>
-#include"vgui_win32.h"
+#include"Font.h"
 
 using namespace vgui;
 

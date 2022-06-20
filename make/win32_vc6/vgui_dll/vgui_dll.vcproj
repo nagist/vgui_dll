@@ -221,7 +221,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\App.cpp"
+				RelativePath="..\..\..\src\vgui\App.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -243,7 +243,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Bitmap.cpp"
+				RelativePath="..\..\..\src\vgui\Bitmap.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -265,7 +265,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\BitmapTGA.cpp"
+				RelativePath="..\..\..\src\vgui\BitmapTGA.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -287,7 +287,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Border.cpp"
+				RelativePath="..\..\..\src\vgui\Border.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -309,7 +309,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\BorderLayout.cpp"
+				RelativePath="..\..\..\src\vgui\BorderLayout.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -331,7 +331,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\BorderPair.cpp"
+				RelativePath="..\..\..\src\vgui\BorderPair.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -353,7 +353,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\BuildGroup.cpp"
+				RelativePath="..\..\..\src\vgui\BuildGroup.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -375,7 +375,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Button.cpp"
+				RelativePath="..\..\..\src\vgui\Button.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -397,7 +397,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ButtonGroup.cpp"
+				RelativePath="..\..\..\src\vgui\ButtonGroup.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -419,7 +419,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\CheckButton.cpp"
+				RelativePath="..\..\..\src\vgui\CheckButton.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -441,7 +441,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Color.cpp"
+				RelativePath="..\..\..\src\vgui\Color.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -463,7 +463,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ConfigWizard.cpp"
+				RelativePath="..\..\..\src\vgui\ConfigWizard.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -485,7 +485,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Cursor.cpp"
+				RelativePath="..\..\..\src\vgui\Cursor.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -507,7 +507,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\DataInputStream.cpp"
+				RelativePath="..\..\..\src\vgui\DataInputStream.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -529,7 +529,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Desktop.cpp"
+				RelativePath="..\..\..\src\vgui\Desktop.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -551,7 +551,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\DesktopIcon.cpp"
+				RelativePath="..\..\..\src\vgui\DesktopIcon.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -573,7 +573,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\EditPanel.cpp"
+				RelativePath="..\..\..\src\vgui\EditPanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -595,7 +595,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\EtchedBorder.cpp"
+				RelativePath="..\..\..\src\vgui\EtchedBorder.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -617,7 +617,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\FileInputStream.cpp"
+				RelativePath="..\..\..\src\vgui\FileInputStream.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -639,7 +639,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\FlowLayout.cpp"
+				RelativePath="..\..\..\src\vgui\FlowLayout.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -661,7 +661,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\FocusNavGroup.cpp"
+				RelativePath="..\..\..\src\vgui\FocusNavGroup.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -683,7 +683,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Font.cpp"
+				RelativePath="..\..\..\src\vgui\Font.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -705,7 +705,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Frame.cpp"
+				RelativePath="..\..\..\src\vgui\Frame.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -727,7 +727,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\GridLayout.cpp"
+				RelativePath="..\..\..\src\vgui\GridLayout.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -749,7 +749,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\HeaderPanel.cpp"
+				RelativePath="..\..\..\src\vgui\HeaderPanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -771,7 +771,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Image.cpp"
+				RelativePath="..\..\..\src\vgui\Image.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -793,7 +793,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ImagePanel.cpp"
+				RelativePath="..\..\..\src\vgui\ImagePanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -815,7 +815,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\IntLabel.cpp"
+				RelativePath="..\..\..\src\vgui\IntLabel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -837,7 +837,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Label.cpp"
+				RelativePath="..\..\..\src\vgui\Label.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -859,7 +859,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Layout.cpp"
+				RelativePath="..\..\..\src\vgui\Layout.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -881,7 +881,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\LineBorder.cpp"
+				RelativePath="..\..\..\src\vgui\LineBorder.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -903,7 +903,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ListPanel.cpp"
+				RelativePath="..\..\..\src\vgui\ListPanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -925,7 +925,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\LoweredBorder.cpp"
+				RelativePath="..\..\..\src\vgui\LoweredBorder.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -947,7 +947,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Menu.cpp"
+				RelativePath="..\..\..\src\vgui\Menu.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -969,7 +969,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\MenuItem.cpp"
+				RelativePath="..\..\..\src\vgui\MenuItem.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -991,7 +991,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\MenuSeparator.cpp"
+				RelativePath="..\..\..\src\vgui\MenuSeparator.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1013,7 +1013,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\MessageBox.cpp"
+				RelativePath="..\..\..\src\vgui\MessageBox.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1035,7 +1035,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\MiniApp.cpp"
+				RelativePath="..\..\..\src\vgui\MiniApp.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1057,7 +1057,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Panel.cpp"
+				RelativePath="..\..\..\src\vgui\Panel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1079,7 +1079,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\PopupMenu.cpp"
+				RelativePath="..\..\..\src\vgui\PopupMenu.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1101,7 +1101,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ProgressBar.cpp"
+				RelativePath="..\..\..\src\vgui\ProgressBar.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1123,7 +1123,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\RadioButton.cpp"
+				RelativePath="..\..\..\src\vgui\RadioButton.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1145,7 +1145,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\RaisedBorder.cpp"
+				RelativePath="..\..\..\src\vgui\RaisedBorder.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1167,7 +1167,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Scheme.cpp"
+				RelativePath="..\..\..\src\vgui\Scheme.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1189,7 +1189,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ScrollBar.cpp"
+				RelativePath="..\..\..\src\vgui\ScrollBar.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1211,7 +1211,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ScrollPanel.cpp"
+				RelativePath="..\..\..\src\vgui\ScrollPanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1233,7 +1233,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Slider.cpp"
+				RelativePath="..\..\..\src\vgui\Slider.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1255,7 +1255,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\StackLayout.cpp"
+				RelativePath="..\..\..\src\vgui\StackLayout.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1277,7 +1277,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\String.cpp"
+				RelativePath="..\..\..\src\vgui\String.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1299,7 +1299,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\Surface.cpp"
+				RelativePath="..\..\..\src\vgui\Surface.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1321,7 +1321,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\SurfaceBase.cpp"
+				RelativePath="..\..\..\src\vgui\SurfaceBase.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1343,7 +1343,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TablePanel.cpp"
+				RelativePath="..\..\..\src\vgui\TablePanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1365,7 +1365,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TabPanel.cpp"
+				RelativePath="..\..\..\src\vgui\TabPanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1387,7 +1387,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TaskBar.cpp"
+				RelativePath="..\..\..\src\vgui\TaskBar.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1409,7 +1409,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TextEntry.cpp"
+				RelativePath="..\..\..\src\vgui\TextEntry.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1431,7 +1431,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TextGrid.cpp"
+				RelativePath="..\..\..\src\vgui\TextGrid.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1453,7 +1453,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TextImage.cpp"
+				RelativePath="..\..\..\src\vgui\TextImage.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1475,7 +1475,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TextPanel.cpp"
+				RelativePath="..\..\..\src\vgui\TextPanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1497,7 +1497,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\ToggleButton.cpp"
+				RelativePath="..\..\..\src\vgui\ToggleButton.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1519,7 +1519,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\TreeFolder.cpp"
+				RelativePath="..\..\..\src\vgui\TreeFolder.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1541,7 +1541,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\vgui.cpp"
+				RelativePath="..\..\..\src\vgui\vgui.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1563,7 +1563,7 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\..\lib-src\vgui\WizardPanel.cpp"
+				RelativePath="..\..\..\src\vgui\WizardPanel.cpp"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1588,7 +1588,7 @@
 				Name="win32"
 				>
 				<File
-					RelativePath="..\..\..\lib-src\win32\App.cpp"
+					RelativePath="..\..\..\src\win32\App.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1614,7 +1614,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\lib-src\win32\Cursor.cpp"
+					RelativePath="..\..\..\src\posix\Cursor.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1640,7 +1640,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\lib-src\win32\fileimage.cpp"
+					RelativePath="..\..\..\src\posix\fileimage.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1666,37 +1666,11 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\lib-src\win32\fileimage.h"
+					RelativePath="..\..\..\src\posix\fileimage.h"
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\lib-src\win32\Font.cpp"
-					>
-					<FileConfiguration
-						Name="Debug|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							ObjectFile=".\Debug\win32/"
-							ProgramDataBaseFileName="Debug\win32/"
-						/>
-					</FileConfiguration>
-					<FileConfiguration
-						Name="Release|Win32"
-						>
-						<Tool
-							Name="VCCLCompilerTool"
-							AdditionalIncludeDirectories=""
-							PreprocessorDefinitions=""
-							ObjectFile=".\Release\win32/"
-							ProgramDataBaseFileName="Release\win32/"
-						/>
-					</FileConfiguration>
-				</File>
-				<File
-					RelativePath="..\..\..\lib-src\win32\Surface.cpp"
+					RelativePath="..\..\..\src\win32\Font.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1722,7 +1696,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\lib-src\win32\vfontdata.cpp"
+					RelativePath="..\..\..\src\win32\Surface.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1748,11 +1722,7 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\lib-src\win32\vfontdata.h"
-					>
-				</File>
-				<File
-					RelativePath="..\..\..\lib-src\win32\vgui.cpp"
+					RelativePath="..\..\..\src\posix\vfontdata.cpp"
 					>
 					<FileConfiguration
 						Name="Debug|Win32"
@@ -1778,7 +1748,37 @@
 					</FileConfiguration>
 				</File>
 				<File
-					RelativePath="..\..\..\lib-src\win32\vgui_win32.h"
+					RelativePath="..\..\..\src\posix\vfontdata.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\posix\vgui.cpp"
+					>
+					<FileConfiguration
+						Name="Debug|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\Debug\win32/"
+							ProgramDataBaseFileName="Debug\win32/"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							AdditionalIncludeDirectories=""
+							PreprocessorDefinitions=""
+							ObjectFile=".\Release\win32/"
+							ProgramDataBaseFileName="Release\win32/"
+						/>
+					</FileConfiguration>
+				</File>
+				<File
+					RelativePath="..\..\..\src\win32\Font.h"
 					>
 				</File>
 			</Filter>

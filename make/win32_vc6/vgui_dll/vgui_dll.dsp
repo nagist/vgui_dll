@@ -96,7 +96,7 @@ LINK32=link.exe
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\App.cpp"
+SOURCE="..\..\..\src\win32\App.cpp"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -111,7 +111,7 @@ SOURCE="..\..\..\lib-src\win32\App.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\Cursor.cpp"
+SOURCE="..\..\..\src\posix\Cursor.cpp"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -126,7 +126,7 @@ SOURCE="..\..\..\lib-src\win32\Cursor.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\fileimage.cpp"
+SOURCE="..\..\..\src\posix\fileimage.cpp"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -141,7 +141,7 @@ SOURCE="..\..\..\lib-src\win32\fileimage.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\fileimage.h"
+SOURCE="..\..\..\src\posix\fileimage.h"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -156,7 +156,7 @@ SOURCE="..\..\..\lib-src\win32\fileimage.h"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\Font.cpp"
+SOURCE="..\..\..\src\win32\Font.cpp"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -171,7 +171,7 @@ SOURCE="..\..\..\lib-src\win32\Font.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\Surface.cpp"
+SOURCE="..\..\..\src\win32\Surface.cpp"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -186,7 +186,7 @@ SOURCE="..\..\..\lib-src\win32\Surface.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\vfontdata.cpp"
+SOURCE="..\..\..\src\posix\vfontdata.cpp"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -201,7 +201,7 @@ SOURCE="..\..\..\lib-src\win32\vfontdata.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\vfontdata.h"
+SOURCE="..\..\..\src\posix\vfontdata.h"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -216,7 +216,7 @@ SOURCE="..\..\..\lib-src\win32\vfontdata.h"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\win32\vgui.cpp"
+SOURCE="..\..\..\src\posix\vgui.cpp"
 
 !IF  "$(CFG)" == "vgui_dll - Win32 Release"
 
@@ -247,251 +247,251 @@ SOURCE="..\..\..\lib-src\win32\vgui_win32.h"
 # End Group
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\App.cpp"
+SOURCE="..\..\..\src\vgui\App.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Bitmap.cpp"
+SOURCE="..\..\..\src\vgui\Bitmap.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\BitmapTGA.cpp"
+SOURCE="..\..\..\src\vgui\BitmapTGA.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Border.cpp"
+SOURCE="..\..\..\src\vgui\Border.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\BorderLayout.cpp"
+SOURCE="..\..\..\src\vgui\BorderLayout.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\BorderPair.cpp"
+SOURCE="..\..\..\src\vgui\BorderPair.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\BuildGroup.cpp"
+SOURCE="..\..\..\src\vgui\BuildGroup.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Button.cpp"
+SOURCE="..\..\..\src\vgui\Button.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ButtonGroup.cpp"
+SOURCE="..\..\..\src\vgui\ButtonGroup.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\CheckButton.cpp"
+SOURCE="..\..\..\src\vgui\CheckButton.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Color.cpp"
+SOURCE="..\..\..\src\vgui\Color.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ConfigWizard.cpp"
+SOURCE="..\..\..\src\vgui\ConfigWizard.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Cursor.cpp"
+SOURCE="..\..\..\src\vgui\Cursor.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\DataInputStream.cpp"
+SOURCE="..\..\..\src\vgui\DataInputStream.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Desktop.cpp"
+SOURCE="..\..\..\src\vgui\Desktop.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\DesktopIcon.cpp"
+SOURCE="..\..\..\src\vgui\DesktopIcon.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\EditPanel.cpp"
+SOURCE="..\..\..\src\vgui\EditPanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\EtchedBorder.cpp"
+SOURCE="..\..\..\src\vgui\EtchedBorder.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\FileInputStream.cpp"
+SOURCE="..\..\..\src\vgui\FileInputStream.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\FlowLayout.cpp"
+SOURCE="..\..\..\src\vgui\FlowLayout.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\FocusNavGroup.cpp"
+SOURCE="..\..\..\src\vgui\FocusNavGroup.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Font.cpp"
+SOURCE="..\..\..\src\vgui\Font.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Frame.cpp"
+SOURCE="..\..\..\src\vgui\Frame.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\GridLayout.cpp"
+SOURCE="..\..\..\src\vgui\GridLayout.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\HeaderPanel.cpp"
+SOURCE="..\..\..\src\vgui\HeaderPanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Image.cpp"
+SOURCE="..\..\..\src\vgui\Image.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ImagePanel.cpp"
+SOURCE="..\..\..\src\vgui\ImagePanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\IntLabel.cpp"
+SOURCE="..\..\..\src\vgui\IntLabel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Label.cpp"
+SOURCE="..\..\..\src\vgui\Label.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Layout.cpp"
+SOURCE="..\..\..\src\vgui\Layout.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\LineBorder.cpp"
+SOURCE="..\..\..\src\vgui\LineBorder.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ListPanel.cpp"
+SOURCE="..\..\..\src\vgui\ListPanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\LoweredBorder.cpp"
+SOURCE="..\..\..\src\vgui\LoweredBorder.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Menu.cpp"
+SOURCE="..\..\..\src\vgui\Menu.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\MenuItem.cpp"
+SOURCE="..\..\..\src\vgui\MenuItem.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\MenuSeparator.cpp"
+SOURCE="..\..\..\src\vgui\MenuSeparator.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\MessageBox.cpp"
+SOURCE="..\..\..\src\vgui\MessageBox.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\MiniApp.cpp"
+SOURCE="..\..\..\src\vgui\MiniApp.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Panel.cpp"
+SOURCE="..\..\..\src\vgui\Panel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\PopupMenu.cpp"
+SOURCE="..\..\..\src\vgui\PopupMenu.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ProgressBar.cpp"
+SOURCE="..\..\..\src\vgui\ProgressBar.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\RadioButton.cpp"
+SOURCE="..\..\..\src\vgui\RadioButton.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\RaisedBorder.cpp"
+SOURCE="..\..\..\src\vgui\RaisedBorder.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Scheme.cpp"
+SOURCE="..\..\..\src\vgui\Scheme.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ScrollBar.cpp"
+SOURCE="..\..\..\src\vgui\ScrollBar.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ScrollPanel.cpp"
+SOURCE="..\..\..\src\vgui\ScrollPanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Slider.cpp"
+SOURCE="..\..\..\src\vgui\Slider.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\StackLayout.cpp"
+SOURCE="..\..\..\src\vgui\StackLayout.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\String.cpp"
+SOURCE="..\..\..\src\vgui\String.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\Surface.cpp"
+SOURCE="..\..\..\src\vgui\Surface.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\SurfaceBase.cpp"
+SOURCE="..\..\..\src\vgui\SurfaceBase.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TablePanel.cpp"
+SOURCE="..\..\..\src\vgui\TablePanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TabPanel.cpp"
+SOURCE="..\..\..\src\vgui\TabPanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TaskBar.cpp"
+SOURCE="..\..\..\src\vgui\TaskBar.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TextEntry.cpp"
+SOURCE="..\..\..\src\vgui\TextEntry.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TextGrid.cpp"
+SOURCE="..\..\..\src\vgui\TextGrid.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TextImage.cpp"
+SOURCE="..\..\..\src\vgui\TextImage.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TextPanel.cpp"
+SOURCE="..\..\..\src\vgui\TextPanel.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\ToggleButton.cpp"
+SOURCE="..\..\..\src\vgui\ToggleButton.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\TreeFolder.cpp"
+SOURCE="..\..\..\src\vgui\TreeFolder.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\vgui.cpp"
+SOURCE="..\..\..\src\vgui\vgui.cpp"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\lib-src\vgui\WizardPanel.cpp"
+SOURCE="..\..\..\src\vgui\WizardPanel.cpp"
 # End Source File
 # End Group
 # Begin Group "Header Files"

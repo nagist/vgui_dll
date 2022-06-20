@@ -89,7 +89,7 @@ void App::init()
 	// first byte unshifted key
 	// second byte shifted key
 	// the rest is the name of the key
-#if defined ( WIN32 )
+#if defined ( _WIN32 )
 	staticKeyTrans[KEY_0]				="0)KEY_0";
 	staticKeyTrans[KEY_1]				="1!KEY_1";
 	staticKeyTrans[KEY_2]				="2@KEY_2";
@@ -215,7 +215,7 @@ void App::run()
 
 void App::start()
 {
-#if defined ( WIN32 )
+#if defined ( _WIN32 )
 	main(__argc,__argv);
 #endif
 	if(_externalMain)

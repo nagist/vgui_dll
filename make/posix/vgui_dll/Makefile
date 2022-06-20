@@ -6,41 +6,57 @@
 
 DLLNAME=vgui
 
-CC=gcc
+CXX?=g++
 
 SRCDIR=../../../../..
 VGUIDIR=../../..
-VGUISRCDIR=$(VGUIDIR)/lib-src
+VGUISRCDIR=$(VGUIDIR)/src
 VGUIINCDIR=$(VGUIDIR)/include
+UTLSRCDIR=$(VGUIDIR)/miniutl
+UTLINCDIR=$(UTLSRCDIR)
 PUBLICDIR=$(SRCDIR)/public
 
 OBJDIR=./obj
-BINDIR=./bin
+LIBDIR=$(VGUIDIR)/lib
 
-BASE_CFLAGS=-DNDEBUG -D_LINUX -DLINUX -Dstricmp=strcasecmp -D_vsnprintf=vsnprintf
+BASE_CFLAGS=-DNDEBUG -Dstricmp=strcasecmp -D_vsnprintf=vsnprintf
 
 CFLAGS=$(BASE_CFLAGS) -w -O1
 
 ifneq ($(64BIT), 1)
-    CFLAGS += -m32
+	CFLAGS += -m32
 endif
 
-INCLUDEDIRS=-I. -I$(VGUIINCDIR) -I$(PUBLICDIR)
-
-LDFLAGS=-Wl,--no-undefined
-
+SYS = $(shell $(CXX) -dumpmachine)
+ifneq (, $(findstring darwin, $(SYS)))
+PLATFORM=apple
+SHLIBEXT=dylib
+else
+PLATFORM=posix
 SHLIBEXT=so
+endif
+
+PLATFORMINCDIR=$(VGUISRCDIR)/platform/$(PLATFORM)
+POSIXINCDIR=$(VGUISRCDIR)/platform/posix
+
 SHLIBCFLAGS=-fPIC
 SHLIBLDFLAGS=-shared
 
-DO_CC=$(CC) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
+INCLUDEDIRS=-I. -I$(VGUIINCDIR) -I$(PUBLICDIR) -I$(UTLINCDIR) -I$(PLATFORMINCDIR) -I$(POSIXINCDIR)
+
+LDFLAGS=-Wl,--no-undefined
+
+DO_CXX=$(CXX) $(CFLAGS) $(SHLIBCFLAGS) $(INCLUDEDIRS) -o $@ -c $<
 
 #############################################################################
 # SETUP AND BUILD
 #############################################################################
 
 $(OBJDIR)/%.o: $(VGUISRCDIR)/%.cpp
-	$(DO_CC)
+	$(DO_CXX)
+
+$(OBJDIR)/%.o: $(UTLSRCDIR)/utlmemory.cpp
+	$(DO_CXX)
 
 OBJ = \
 	$(OBJDIR)/vgui/App.o \
@@ -105,23 +121,26 @@ OBJ = \
 	$(OBJDIR)/vgui/TreeFolder.o \
 	$(OBJDIR)/vgui/vgui.o \
 	$(OBJDIR)/vgui/WizardPanel.o \
-	$(OBJDIR)/linux/App.o \
-	$(OBJDIR)/linux/Cursor.o \
-	$(OBJDIR)/linux/fileimage.o \
-	$(OBJDIR)/linux/Font.o \
-	$(OBJDIR)/linux/Surface.o \
-	$(OBJDIR)/linux/vfontdata.o \
-	$(OBJDIR)/linux/vgui.o
+	$(OBJDIR)/platform/posix/App.o \
+	$(OBJDIR)/platform/posix/Cursor.o \
+	$(OBJDIR)/platform/posix/fileimage.o \
+	$(OBJDIR)/platform/$(PLATFORM)/Font.o \
+	$(OBJDIR)/platform/posix/Surface.o \
+	$(OBJDIR)/platform/posix/vfontdata.o \
+	$(OBJDIR)/platform/posix/vgui.o \
+	$(OBJDIR)/miniutl/utlmemory.o
 
-$(BINDIR)/$(DLLNAME).$(SHLIBEXT) : neat $(OBJ)
+$(LIBDIR)/$(DLLNAME).$(SHLIBEXT) : neat $(OBJ)
 	$(CXX) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)
 
 neat:
 	-mkdir -p $(OBJDIR)
 	-mkdir -p $(OBJDIR)/vgui
-	-mkdir -p $(OBJDIR)/linux
-	-mkdir -p $(BINDIR)
+	-mkdir -p $(OBJDIR)/miniutl
+	-mkdir -p $(OBJDIR)/platform/posix
+	-mkdir -p $(OBJDIR)/platform/$(PLATFORM)
+	-mkdir -p $(LIBDIR)
 clean:
 	-rm -rf $(OBJDIR)
-	-rm -rf $(BINDIR)
+	-rm -f $(LIBDIR)/$(DLLNAME).$(SHLIBEXT)
 

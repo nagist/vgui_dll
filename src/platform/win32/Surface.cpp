@@ -84,7 +84,7 @@ static WNDCLASS staticWndclass = { NULL };
 static ATOM staticWndclassAtom = 0;
 
 // these functions defined below
-LRESULT CALLBACK staticProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam);
+static LRESULT CALLBACK staticProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam);
 
 bool Surface::createPlat()
 {
@@ -236,7 +236,7 @@ bool Surface::createPlat()
 	return true;
 }
 
-static LRESULT CALLBACK staticProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
+LRESULT CALLBACK staticProc(HWND hwnd,UINT msg,WPARAM wparam,LPARAM lparam)
 {
 	LRESULT ret = TRUE;
 

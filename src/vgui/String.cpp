@@ -153,15 +153,15 @@ void String::test()
 #ifdef _WIN32
 	printf("{\n");
 	String aa("aa");
-	printf("aa [%s]\n",aa);
+	printf("aa [%s]\n",aa.getChars());
 	String bb("bb");
-	printf("bb [%s]\n",bb);
+	printf("bb [%s]\n",bb.getChars());
 	String cc("cc");
-	printf("cc [%s]\n",cc);
+	printf("cc [%s]\n",cc.getChars());
 	String dd("dd");
-	printf("dd [%s]\n",dd);
+	printf("dd [%s]\n",dd.getChars());
 	String aacc=aa+cc;
-	printf("aacc [%s]\n",aacc);
+	printf("aacc [%s]\n",aacc.getChars());
 	String aabb("aa");
 	printf("}\n");
 #endif

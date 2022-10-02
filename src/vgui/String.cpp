@@ -35,7 +35,7 @@ using namespace vgui;
 
 String::String()
 {
-	_text="";
+	_text=(char*)"";
 }
 
 String::String(const char* text)

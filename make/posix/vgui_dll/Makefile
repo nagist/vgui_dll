@@ -128,7 +128,8 @@ OBJ = \
 	$(OBJDIR)/platform/posix/Surface.o \
 	$(OBJDIR)/platform/posix/vfontdata.o \
 	$(OBJDIR)/platform/posix/vgui.o \
-	$(OBJDIR)/miniutl/utlmemory.o
+	$(OBJDIR)/miniutl/utlmemory.o \
+	$(OBJDIR)/miniutl/strtools.o
 
 $(LIBDIR)/$(DLLNAME).$(SHLIBEXT) : neat $(OBJ)
 	$(CXX) $(CFLAGS) $(SHLIBLDFLAGS) $(LDFLAGS) -o $@ $(OBJ)

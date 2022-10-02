@@ -30,6 +30,7 @@
 #include<VGUI_Font.h>
 #include<VGUI_Dar.h>
 #include"Font.h"
+#include"strtools.h"
 
 using namespace vgui;
 
@@ -67,7 +68,7 @@ bool FontPlat::ExtendedABCWidthsCacheLessFunc(const abc_cache_t &lhs, const abc_
 
 bool FontPlat::equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 {
-	if (!stricmp(name, m_szName) 
+	if (!V_stricmp(name, m_szName) 
 		&& m_iTall == tall
 		&& m_iWeight == weight
 		&& m_bUnderlined == underline)

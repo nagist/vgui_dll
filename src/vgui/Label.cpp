@@ -35,6 +35,7 @@
 #include<VGUI_FlowLayout.h>
 #include<VGUI_TextEntry.h>
 #include<VGUI_ActionSignal.h>
+#include"strtools.h"
 
 using namespace vgui;
 

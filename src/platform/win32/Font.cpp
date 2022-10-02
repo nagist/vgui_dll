@@ -30,6 +30,7 @@
 #include<VGUI_Font.h>
 #include<VGUI_Dar.h>
 #include"Font.h"
+#include"strtools.h"
 
 using namespace vgui;
 
@@ -108,7 +109,7 @@ FontPlat::~FontPlat()
 
 bool FontPlat::equals(const char* name,int tall,int wide,float rotation,int weight,bool italic,bool underline,bool strikeout,bool symbol)
 {
-	if (!stricmp(name, m_szName) 
+	if (!V_stricmp(name, m_szName) 
 		&& m_iTall == tall
 		&& m_iWide == wide
 		&& m_flRotation == rotation
